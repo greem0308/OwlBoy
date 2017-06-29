@@ -7,13 +7,12 @@
 
 class elements
 {
-public:
+public: // private을 퍼블릭으로 푼다음에.. 
 	const char* name;
-	float increaseSpeed;
-	float maxSpeed;
-	float angle;
-	int currentHP;
-	int maxHP;
+	float x;
+	float y;
+	int hp;
+	int coin;
 
 	elements(void) {};
 	~elements(void) {};
@@ -24,8 +23,8 @@ class database : public singletonBase <database>
 private:
 	typedef vector<string> arrElements;
 	typedef vector<string>::iterator iterElements;
-	typedef map<string, elements*> arrElement;
-	typedef map<string, elements*>::iterator iterElement;
+	typedef map<string, elements> arrElement;    //키값 first,second으로  
+	typedef map<string, elements>::iterator iterElement; //맵도 이터레이터 써서 
 
 private:
 	arrElement _mTotalElement;
@@ -38,21 +37,9 @@ public:
 
 	elements* getElementData(string str)
 	{
-		return _mTotalElement.find(str)->second;
+		return &_mTotalElement.find(str)->second;
 	}
 
-	void setElementDataIncreaseSpeed(string str, float is);
-	void setElementDataMaxSpeed(string str, float ms);
-	void setElementDataAngle(string str, float a);
-	void setElementDataCurrentHP(string str, int ch);
-	void setElementDataMaxHP(string str, int mh);
-
-	float getElementDataIncreaseSpeed(string str);
-	float getElementDataMaxSpeed(string str);
-	float getElementDataAngle(string str);
-	int getElementDataCurrentHP(string str);
-	int getElementDataMaxHP(string str);
-	
 	database(void);
 	~database(void);
 };

@@ -19,9 +19,12 @@ HRESULT gameStudy::init(void)
 
 	//씬 생성
 	SCENEMANAGER->addScene("test", new test);
-	
+	SCENEMANAGER->addScene("startScene", new startScene);
+	SCENEMANAGER->addScene("otusHouseScene", new otusHouseScene);
+	SCENEMANAGER->addScene("VellieScene", new VellieScene);
+
 	//현재 씬을 _sceneOne으로 설정
-	SCENEMANAGER->changeScene("test");
+	SCENEMANAGER->changeScene("startScene");
 	
 	return S_OK;
 }
@@ -41,6 +44,6 @@ void gameStudy::render(void)
 {
 	IMAGEMANAGER->findImage("mapImage")->render(getMemDC());
 	SCENEMANAGER->render();
-	/*TIMEMANAGER->render(getMemDC());*/
+	TIMEMANAGER->render(getMemDC());
 	this->getBackBuffer()->render(getHDC(), 0, 0);
 }

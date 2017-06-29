@@ -2,6 +2,9 @@
 
 #include "gamenode.h"
 #include "test.h"
+#include "startScene.h"
+#include "otusHouseScene.h"
+#include "VellieScene.h"
 
 class gameStudy : public gameNode
 {

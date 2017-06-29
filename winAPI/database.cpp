@@ -28,80 +28,36 @@ void database::loadDatabase(void)
 	arrElements vTemp;
 	vTemp = TXTMANAGER->load("database.txt");
 
+	elements ele; // 빈컵이고 //클래스 변수 선언 
+
 	string str;
-	int count = 0;
 
 	for (unsigned int i = 0; i < vTemp.size(); i++)
 	{
 		if (vTemp[i] == "|")
 		{
-			elements* em = new elements; 
 			str = vTemp[i + 1];
-			_mTotalElement.insert(make_pair(vTemp[i + 1], em));
-			if (i != 0) count += 7;
+
+			// stl 맵.
+			// 선언 방법 :  map<인덱스형식,데이터형식> 사용할이름;
+			// 첫 번째 요소는 first로써 인덱스이고, 두 번째 요소는 second로써 데이터이다. 
+
+			// 맵인데, insert는 백터의 푸시백 같은 역할(키값(스트링으로 넣는게 좋음), 세컨드값. )
+			_mTotalElement.insert(make_pair(vTemp[i + 1], ele));
+
+			ele.x = atoi(vTemp[i + 2].c_str());
+			ele.y = atoi(vTemp[i + 3].c_str());
+			ele.hp = atoi(vTemp[i + 4].c_str());
+			ele.coin = atoi(vTemp[i + 5].c_str());
+
+			//arrElements vElement;
+
+			iterElement mIter = _mTotalElement.find(str);
+			mIter->second = ele;  //벡터로 되어있던걸 클래스로.. 
 			continue;
 		}
-
-		iterElement mIter = _mTotalElement.find(str);
-		if (i == count + 1) mIter->second->name = vTemp[i].c_str();
-		else if (i == count + 2) mIter->second->increaseSpeed = (float)atof(vTemp[i].c_str());
-		else if (i == count + 3) mIter->second->maxSpeed = (float)atof(vTemp[i].c_str());
-		else if (i == count + 4) mIter->second->angle = (float)atof(vTemp[i].c_str());
-		else if (i == count + 5) mIter->second->currentHP = (int)atoi(vTemp[i].c_str());
-		else if (i == count + 6) mIter->second->maxHP = (int)atoi(vTemp[i].c_str());
+		// mIter->second.push_back(vTemp[i]);
 	}
-	vTemp.clear();
+	//_mTotalElement;
+	vTemp.clear(); //데이터 남아서 
 }
-
-void database::setElementDataIncreaseSpeed(string str, float is)
-{
-	_mTotalElement.find(str)->second->increaseSpeed = is;
-}
-
-void database::setElementDataMaxSpeed(string str, float ms)
-{
-	_mTotalElement.find(str)->second->maxSpeed = ms;
-}
-
-void database::setElementDataAngle(string str, float a)
-{
-	_mTotalElement.find(str)->second->angle = a;
-}
-
-void database::setElementDataCurrentHP(string str, int ch)
-{
-	_mTotalElement.find(str)->second->currentHP = ch;
-}
-
-void database::setElementDataMaxHP(string str, int mh)
-{
-	_mTotalElement.find(str)->second->maxHP = mh;
-}
-
-float database::getElementDataIncreaseSpeed(string str)
-{
-	return _mTotalElement.find(str)->second->increaseSpeed;
-}
-
-float database::getElementDataMaxSpeed(string str)
-{
-	return _mTotalElement.find(str)->second->maxSpeed;
-}
-
-float database::getElementDataAngle(string str)
-{
-	return _mTotalElement.find(str)->second->angle;
-}
-
-int database::getElementDataCurrentHP(string str)
-{
-	return _mTotalElement.find(str)->second->currentHP;
-}
-
-int database::getElementDataMaxHP(string str)
-{
-	return _mTotalElement.find(str)->second->maxHP;
-}
-
-
-
