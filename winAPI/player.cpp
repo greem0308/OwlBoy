@@ -28,8 +28,8 @@ HRESULT player::init(void)
 	IMAGEMANAGER->addFrameImage("geddy", "player/geddy.bmp", 100 * 6 * 1.5, 100 * 8 * 1.5, 6, 8, true, RGB(255, 0, 255));
 
 	// player __________________________________________________________________________________________________________
-	_player.x = 300;
-	_player.y = 100;
+	_player.x = 550;
+	_player.y = 250;
 	// database 에 해놓은걸 또 초기화하면 안되니까 주석처리해놨음. 
 	//_player.hp = 0;
 	//_player.coin = 0;
@@ -62,8 +62,8 @@ HRESULT player::init(void)
 
 	// 총은 플레이어에서 쏘고, 게디 잡을때의 렉트가 필요해서 구조체를 생성하였음.
 	// geddy __________________________________________________________________________________________________________
-	geddy.x = 600;
-	geddy.y = 100;
+	geddy.x = 500;
+	geddy.y = 200;
 	geddy.radius = 25;
 	geddy.rc = RectMakeCenter(geddy.x, geddy.y, 50, 50);
 	geddy.follow = false; // 플레이어를 따라다니냐?
@@ -85,6 +85,9 @@ HRESULT player::init(void)
 	geddy.gravity = 30.0f;
 	geddy.groundgrv = 0;
 	geddy.showCurve = false; // 커브 보여줄때 구분 불.
+
+
+	tempX = 200;
 return S_OK;
 }
 
@@ -268,6 +271,8 @@ void player::PixelCollision(void)
 	}
 	if (_player.life)
 	{
+		// Pink_pixel_________________________________________________________________________________________________
+
 		// i = x - 크기절반; i< x + 크기의 절반; i++
 		for (int i = _player.x - 50 / 2; i < _player.x + 50 / 2; ++i)
 		{
@@ -277,7 +282,6 @@ void player::PixelCollision(void)
 				_player.ground = true; // 땅이라고 알려줌. 
 				_player.y += _player.groundgrv; // 플레이어y += 땅 그래피티 
 
-				// 플레이어y += 땅 그래피티 
 				_player.groundgrv = 0;
 				_player.jumpCount = 0;
 				if (_player.fly)
@@ -310,6 +314,56 @@ void player::PixelCollision(void)
 			}
 		}
 
+
+		// BLUE_pixel____________________________________________________________________________________________________
+
+		for (int i = _player.x - 50 / 2; i < _player.x + 50 / 2; ++i)
+		{
+			// 만약 플레이어 y값+크기/2 아래 픽셀이 정해진 색이고 && 땅이 아니면
+			if (GetPixel(getPixelBlue(), i, _player.y + 50 / 2 + 5) == RGB(0, 0, 255) && !_player.ground)
+			{
+				_player.ground = true; // 땅이라고 알려줌. 
+				_player.y += _player.groundgrv; // 플레이어y += 땅 그래피티 
+
+				_player.groundgrv = 0;
+				_player.jumpCount = 0;
+				if (_player.fly)
+				{
+					_player.fly = false;
+					_player.state = IDLE;
+				}
+				if (_player.jump)
+				{
+					_player.jump = false;
+					_player.state = IDLE;
+				}
+				if (_player.fall)
+				{
+					_player.fall = false;
+					_player.state = IDLE;
+				}
+			}
+		}
+
+		//바텀. player바텀+5 부분이 파랑색이면,   
+		for (int i = _player.x - 50 / 2; i < _player.x + 50 / 2; ++i)//플레이어 범위 양옆 검사
+		{
+			if (GetPixel(getPixelBlue(), i, _player.y + 50 / 2 + 5) == RGB(0, 0, 255) && _player.gravity <= 0)
+			{
+				_player.y += _player.gravity;
+				_player.jump = false;
+				_player.gravity = 20;
+				break;
+			}
+		}
+
+		//for (int i = _player.x-25; i < _player.x + 25; ++i)
+		//{
+			//player.x 오른쪽+5 가 파랑색이면, 
+			if (GetPixel(getPixelBlue(), _player.x + 25, _player.y) == RGB(0, 0, 255))
+			{
+			}
+		//}
 	}// if life
 } // func
 

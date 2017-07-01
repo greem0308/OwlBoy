@@ -101,7 +101,7 @@ public:
 	};
 	tagCurveLine curveLine[50];
 
-
+	int tempX;
 public:
 	virtual HRESULT init(void);
 	virtual void release(void);

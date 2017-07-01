@@ -25,6 +25,9 @@ HRESULT bullet::init(int bulletMax, float range)
 		bullet.img->init("bullet.bmp", 12, 12, true, RGB(255, 0, 255));
 		bullet.speed = 1.1f;
 		bullet.fire = false;
+		bullet.BcurrentX = 0;
+		bullet.BframeCount = 0;
+		bullet.BbulletState = BULLET_SHOOT;
 		_vBullet.push_back(bullet);
 	}
 
@@ -161,7 +164,7 @@ void bulletM1::fire(float x, float y, float angle,
 	bullets.rc = RectMakeCenter(bullets.x, bullets.y,
 		bullets.img->getFrameWidth(), bullets.img->getFrameHeight());
 
-	KEYANIMANAGER->addCoordinateFrameAnimation("bulletFire", "bomb", 0, 3, 15, false, true);
+	KEYANIMANAGER->addCoordinateFrameAnimation("bulletFire", "bomb", 0, 1, 15, false, true);
 	KEYANIMANAGER->addCoordinateFrameAnimation("bulletDie", "bomb", 4, 5, 30, false, true);
 	
 	bullets.curAnimation = KEYANIMANAGER->findAnimation("bulletFire");
@@ -250,7 +253,7 @@ void missileM1::release(void)
 void missileM1::update(void)
 {
 	gameNode::update();
-
+	frameFunc();
 	move();
 }
 
@@ -268,15 +271,25 @@ void missileM1::fire(float x, float y,float angle,int Num)
 	tagBullet bullet;
 	ZeroMemory(&bullet, sizeof(tagBullet));
 
-	bullet.img = new image;
-	bullet.img->init("player/bullet.bmp", 80, 80, 1, 1, true, RGB(255, 0, 255));
+	//bullet.img = new image;
+	bullet.img = IMAGEMANAGER->addFrameImage("bulletEffect", "player/bulletEffect.bmp", 1000/2,100/2, 10, 1, true, RGB(255, 0, 255));
+	//bullet.img->init("player/bulletEffect.bmp", 1000,100, 10, 1, true, RGB(255, 0, 255));
 	bullet.speed = 5.0f;
 	bullet.angle = angle;
 	bullet.x = bullet.fireX = x + cosf(bullet.angle)*30;
 	bullet.y = bullet.fireY = y - sinf(bullet.angle) * 30;
 	bullet.rc = RectMakeCenter(x, y, bullet.img->getFrameWidth(),
 		bullet.img->getFrameHeight());
-	bullet.img->setFrameX(Num);
+	//bullet.img->setFrameX(Num);
+
+	//KEYANIMANAGER->addCoordinateFrameAnimation("playerBulletFire", "bulletEffect", 0, 8, 5, false, true);
+	//KEYANIMANAGER->addCoordinateFrameAnimation("playerBulletDie", "bulletEffect", 2, 8, 3, false, true);
+	//
+	//bullet.curAnimation = KEYANIMANAGER->findAnimation("playerBulletDie");
+	//bullet.curAnimation->start();
+
+	bullet.BbulletState = BULLET_SHOOT;
+
 	_vBullet.push_back(bullet);
 }
 
@@ -290,14 +303,17 @@ void missileM1::move(void)
 			_viBullet->img->getFrameWidth(),
 		_viBullet->img->getFrameHeight());
 
-		if (_range - 10 < getDistance(_viBullet->fireX, _viBullet->fireY, _viBullet->x, _viBullet->y))
+		if (_range - 100 < getDistance(_viBullet->fireX, _viBullet->fireY, _viBullet->x, _viBullet->y))
 		{
-			_viBullet->img->setFrameX(1);
+			//_viBullet->curAnimation = KEYANIMANAGER->findAnimation("playerBulletDie");
+			//_viBullet->curAnimation->start();
+			//_viBullet->img->setFrameX(1);
+			_viBullet->BbulletState == BULLET_DIE;
 		}
 
 		if (_range < getDistance(_viBullet->fireX, _viBullet->fireY, _viBullet->x, _viBullet->y))
 		{
-			SAFE_DELETE(_viBullet->img);
+			//SAFE_DELETE(_viBullet->img);
 			_viBullet = _vBullet.erase(_viBullet);
 		}
 		else ++_viBullet;
@@ -308,8 +324,9 @@ void missileM1::draw(void)
 {
 	for (_viBullet = _vBullet.begin(); _viBullet != _vBullet.end(); ++_viBullet)
 	{
-		_viBullet->img->frameRender(getMemDC(), _viBullet->rc.left, _viBullet->rc.top,
-			_viBullet->img->getFrameX(), 0);
+	_viBullet->img->frameRender(getMemDC(), _viBullet->rc.left, _viBullet->rc.top,
+			_viBullet->img->getFrameX(), _viBullet->currentX);
+	//	_viBullet->img->aniRender(getMemDC(), _viBullet->rc.left, _viBullet->rc.top, _viBullet->curAnimation);
 	}
 }
 
@@ -322,4 +339,45 @@ void missileM1::xMissile(int arrNum, int num, bool Check)
 {
 	if (Check)_vBullet[arrNum].x += num;
 	else _vBullet[arrNum].x -= num;
+}
+
+void missileM1::frameFunc()
+{
+	for (_viBullet = _vBullet.begin(); _viBullet != _vBullet.end(); ++_viBullet)
+	{
+		_viBullet->BframeCount++;
+
+		switch (_viBullet->BbulletState)
+		{
+		case BULLET_NONE:
+			break;
+
+		case BULLET_SHOOT:
+			if (_viBullet->BframeCount > 5)
+			{
+				_viBullet->BframeCount = 0;
+				_viBullet->BcurrentX++;
+				if (_viBullet->BcurrentX > 9)
+				{
+					_viBullet->BcurrentX = 8;
+				}
+			}
+			break;
+
+		case BULLET_DIE:
+			if (_viBullet->BframeCount > 5)
+			{
+				_viBullet->BframeCount = 0;
+				_viBullet->BcurrentX++;
+				if (_viBullet->BcurrentX > 9)
+				{
+					_viBullet->BcurrentX = 0;
+				}
+			}
+			break;
+
+		default:
+			break;
+		}
+	}
 }

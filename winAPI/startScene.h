@@ -1,16 +1,21 @@
 #pragma once
 #include "gameNode.h"
+#include "button.h"
 
 class startScene : public gameNode
 {
 public:
-	RECT startRC;
-
-	struct tagSoundRC
+	button* startBtn;
+	
+	// 화면 돌릴때 필요함.
+	enum DIREC
 	{
-		RECT rc; //클릭할 rc
+		RIGHT,LEFT
 	};
-	tagSoundRC soundRC;
+
+	int frameCount;
+	int currentX;
+	int startDirec;
 
 	//또다른 랜트창들이 뜨고, 데이터베이스랑 연동되는 볼륨 변수가 있을것임. 
 	// 근데 모든 곳에서 다 열려야되니까... 
@@ -21,6 +26,10 @@ public:
 	virtual void release(void);
 	virtual void update(void);
 	virtual void render(void);
+
+	virtual void rotate(void);
+
+	static void cbStartBtn(void);
 
 	startScene();
 	~startScene();

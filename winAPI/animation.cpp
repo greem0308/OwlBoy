@@ -254,7 +254,7 @@ void animation::frameUpdate(float elapsedTime)
 //애니메이션 시작...
 void animation::start(void)
 {
-	if (_isPlay) return;
+ 	if (_isPlay) return;
 	_isPlay = true;
 	_nowPlayIdx = 0;
 }
