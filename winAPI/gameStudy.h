@@ -16,7 +16,6 @@ public:
 	virtual void update(void);
 	virtual void render(void);
 
-
 	gameStudy(void);
 	virtual ~gameStudy(void);
 };

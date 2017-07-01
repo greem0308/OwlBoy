@@ -24,7 +24,7 @@ HRESULT gameStudy::init(void)
 	SCENEMANAGER->addScene("VellieScene", new VellieScene);
 
 	//현재 씬을 _sceneOne으로 설정
-	SCENEMANAGER->changeScene("startScene");
+	SCENEMANAGER->changeScene("VellieScene");
 	
 	return S_OK;
 }

@@ -270,7 +270,7 @@ void missileM1::fire(float x, float y,float angle,int Num)
 	ZeroMemory(&bullet, sizeof(tagBullet));
 
 	bullet.img = new image;
-	bullet.img->init("bullet.bmp", 64, 32, 2, 1, true, RGB(255, 0, 255));
+	bullet.img->init("player/bullet.bmp", 80, 80, 1, 1, true, RGB(255, 0, 255));
 	bullet.speed = 5.0f;
 	bullet.angle = angle;
 	bullet.x = bullet.fireX = x + cosf(bullet.angle)*30;

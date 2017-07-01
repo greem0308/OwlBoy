@@ -77,12 +77,18 @@
     <None Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="action.h" />
+    <ClInclude Include="actionManager.h" />
     <ClInclude Include="animation.h" />
+    <ClInclude Include="BossScene.h" />
     <ClInclude Include="bullets.h" />
     <ClInclude Include="button.h" />
     <ClInclude Include="commonMacroFunction.h" />
     <ClInclude Include="database.h" />
+    <ClInclude Include="dungeonScene.h" />
     <ClInclude Include="enemy.h" />
+    <ClInclude Include="eventBridgeScene.h" />
+    <ClInclude Include="eventScene.h" />
     <ClInclude Include="frameAnimation.h" />
     <ClInclude Include="frameAnimationManager.h" />
     <ClInclude Include="gameNode.h" />
@@ -111,11 +117,17 @@
     <ClInclude Include="VellieScene.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="action.cpp" />
+    <ClCompile Include="actionManager.cpp" />
     <ClCompile Include="animation.cpp" />
+    <ClCompile Include="BossScene.cpp" />
     <ClCompile Include="bullets.cpp" />
     <ClCompile Include="button.cpp" />
     <ClCompile Include="database.cpp" />
+    <ClCompile Include="dungeonScene.cpp" />
     <ClCompile Include="enemy.cpp" />
+    <ClCompile Include="eventBridgeScene.cpp" />
+    <ClCompile Include="eventScene.cpp" />
     <ClCompile Include="frameAnimation.cpp" />
     <ClCompile Include="frameAnimationManager.cpp" />
     <ClCompile Include="gameNode.cpp" />

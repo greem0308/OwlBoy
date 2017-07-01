@@ -13,8 +13,6 @@ public:
 	virtual void update(void);
 	virtual void render(void);
 
-	//static void cbHP_up(void);
-
 	otusHouseScene();
 	~otusHouseScene();
 };
