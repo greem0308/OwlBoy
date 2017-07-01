@@ -3,6 +3,9 @@
 #include "animation.h"
 #include "bullets.h"
 
+#define CURVE_CIRCLE_SIZE 30 // 커브 공 사이즈. 커브 사이간격도 조절함. 
+#define CURVE_CIRCLE_LINE 10 // 커브 공 몇개? 
+
 enum DIRECTION
 {
 	RIGHT,LEFT,UP,DOWN
@@ -15,14 +18,16 @@ enum STATE
 	HURT,DIE,SLEEP	 // 양쪽 다 
 };
 
+//팔
 enum SHOOTSTATE
 {
 	NONESHOOT, SHOOT
 };
 
+// 게디몸 
 enum GeddySTATE
 {
-	gIDLE,gFALL,gFOLLOW
+	gSHOOT,gIDLE,gFALL,gNONE
 };
 
 class player : public gameNode
@@ -51,6 +56,7 @@ public:
 		STATE state;
 		DIRECTION direction;
 		SHOOTSTATE shootState;
+
 		int shootFrameCount;
 		int shootCurrentY;
 
@@ -67,14 +73,34 @@ public:
 		int bodyFrameY;
 		int gunFrameX;
 		int gunFrameY;
+		float angle;
+		float speed;
+		float castGravity;
+		bool cast; // 던진다. 
+		bool showCurve;
+
 		float x, y, radius;
 		RECT gunRC;
 		float gunX, gunY, gunRadius;
+
+		int frameCount;
+	
 		//for jump, gravity___________________________
 		bool ground;
+		GeddySTATE geddyState;
 		float gravity, groundgrv;
 	};
 	tagGeddy geddy;
+
+	struct tagCurveLine
+	{
+		RECT rc;
+		FLOAT angle;
+		FLOAT x;
+		FLOAT y;
+	};
+	tagCurveLine curveLine[50];
+
 
 public:
 	virtual HRESULT init(void);
@@ -87,7 +113,10 @@ public:
 	virtual void PixelCollision(void);
 
 	virtual void geddyFunc(void);
+	virtual void geddyFrameFunc(void); // 게디몸 프레임. (팔은 따로 )
 	virtual void geddyPixelCollision(void);
+	virtual void geddyCastFunc();
+	virtual void CurveLineFunc(void); // 던질떄 궤적.
 
 	// database 의 변수값을 플레이어 변수로 셋한다.. 
 	void setHP(int hp) { _player.hp = hp; }

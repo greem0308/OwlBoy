@@ -25,7 +25,7 @@ HRESULT player::init(void)
 	IMAGEMANAGER->addFrameImage("armGun", "player/armGun.bmp", 50*16*3, 50*5 *3,16,6, true, RGB(255, 0, 255));
 	//IMAGEMANAGER->addFrameImage("geddyR","player/geddyRight.bmp",100 *6 * 1.5 ,100 * 3 * 1.5,6,3,true,RGB(255,0,255));
 	//IMAGEMANAGER->addFrameImage("geddyL", "player/geddyLeft.bmp", 100 * 6 * 1.5, 100 * 3 * 1.5, 6, 3, true, RGB(255, 0, 255));
-	IMAGEMANAGER->addFrameImage("geddy", "player/geddy.bmp", 100 * 6 * 1.5, 100 * 6 * 1.5, 6, 6, true, RGB(255, 0, 255));
+	IMAGEMANAGER->addFrameImage("geddy", "player/geddy.bmp", 100 * 6 * 1.5, 100 * 8 * 1.5, 6, 8, true, RGB(255, 0, 255));
 
 	// player __________________________________________________________________________________________________________
 	_player.x = 300;
@@ -41,13 +41,15 @@ HRESULT player::init(void)
 	_player.jump = false;
 	_player.jumpCount = 0;
 	_player.life = true;
+
+	// 각 행동별 불 변수. 
 	_player.fly = false;
 	_player.fall = false;
 	_player.turn = false;
 	_player.flyTurn = false;
 
 	_player.state = IDLE;
-	_player.direction = RIGHT;
+	_player.direction = RIGHT; 
 	_player.shootState = NONESHOOT;
 
 	_player.frameCount = 0;
@@ -72,13 +74,18 @@ HRESULT player::init(void)
 	geddy.gunX = 0;
 	geddy.gunY = 0;
 	geddy.gunRadius = 10;
-	geddy.gunRC = RectMakeCenter(50,50,20,20);
-
+	geddy.gunRC = RectMakeCenter(50,50,20,20); 
+	geddy.angle = PI; // 포물선으로 던지기위한 앵글변수. 
+	geddy.speed = 12; // 던지면 날라가는 속도.  속도를 높일수록 castGravity값도 높여야한다.
+	geddy.cast = false; //던졌냐?
+	geddy.castGravity = 0; // 점점 증가시킬 중력.
+	geddy.geddyState = gNONE;
+	geddy.frameCount = 0; //게디 몸 관련 프레임.  
 	geddy.ground = false;
 	geddy.gravity = 30.0f;
 	geddy.groundgrv = 0;
-
-	return S_OK;
+	geddy.showCurve = false; // 커브 보여줄때 구분 불.
+return S_OK;
 }
 
 void player::release(void)
@@ -98,15 +105,21 @@ void player::update(void)
 	// 플레이어, 게디 렉트, 총 렉트
 	_player.rc = RectMakeCenter(_player.x, _player.y, _player.imgR->getFrameWidth() / 4, _player.imgR->getFrameHeight() / 3);
 	geddy.rc = RectMakeCenter(geddy.x, geddy.y, geddy.radius*2, geddy.radius*2);
-	geddy.gunRC = RectMakeCenter(geddy.x, geddy.y, geddy.gunRadius*2, geddy.gunRadius*2);
+	geddy.gunRC = RectMakeCenter(geddy.gunX, geddy.gunY, geddy.gunRadius*2, geddy.gunRadius*2);
 
+	//player ___________________________________________
 	keyControl();
 	jump();
 	PixelCollision();
-	frameFunc();
+	frameFunc(); 
 
-	geddyFunc();
-	geddyPixelCollision();
+	//geddy ___________________________________________
+	geddyFunc(); //게디 팔든 프레임, 총쏨. 
+	geddyPixelCollision(); 
+	geddyFrameFunc(); // 게디 몸 프레임. 
+	CurveLineFunc(); // 던질때 커브 라인 그리는 함수
+	geddyCastFunc(); // 던지는 조건,키컨트롤.
+	
 }
 
 void player::render(void)
@@ -146,6 +159,14 @@ void player::render(void)
 	sprintf(str, "%d", _player.coin);
 	TextOut(getMemDC(), 150, 50, str, strlen(str));
 
+	// 던질때 커브 원형들 그리기.
+	if (geddy.showCurve)
+	{
+		for (int i = 0; i < CURVE_CIRCLE_LINE; i++)
+		{
+			Ellipse(getMemDC(), curveLine[i].rc.left, curveLine[i].rc.top, curveLine[i].rc.right, curveLine[i].rc.bottom);
+		}
+	}
 	_player._fire->render();
 }
 
@@ -163,7 +184,7 @@ void player::keyControl(void)
 	if (KEYMANAGER->isStayKeyDown(VK_RIGHT))
 	{
 		_player.direction = RIGHT;
-		_player.state = RUN;
+		_player.state = RUN;	
 		_player.fall = false;
 		_player.x += _player.speed;
 	}
@@ -206,10 +227,13 @@ void player::keyControl(void)
 			_player.y += _player.speed;
 			_player.jump = false;
 		}
-		if (KEYMANAGER->isOnceKeyDown(MK_RBUTTON) || KEYMANAGER->isOnceKeyDown('E'))
+		if (!geddy.follow)
 		{
-			_player.fall = true;
-			_player.jump = true;
+			if (KEYMANAGER->isOnceKeyDown(MK_RBUTTON) || KEYMANAGER->isOnceKeyDown('E'))
+			{
+				_player.fall = true;
+				_player.jump = true;
+			}
 		}
 
 		if (KEYMANAGER->isStayKeyDown(VK_SPACE))
@@ -547,6 +571,7 @@ void player::geddyFunc(void)
 		{
 			_player._fire->fire(geddy.x + cosf(_player.angle) * 35, geddy.y - sinf(_player.angle) * 35, _player.angle, geddy.gunFrameX);
 			_player.shootState = SHOOT;
+			geddy.geddyState = gSHOOT;
 		}
 
 
@@ -604,6 +629,7 @@ void player::geddyPixelCollision(void)
 	//땅에있지도 않고 점프상태도 아니면, 떨어진다. 
 	if (!geddy.ground && !geddy.follow)
 	{
+		geddy.geddyState = gFALL;
 		geddy.groundgrv -= 1.4f;
 		geddy.y -= geddy.groundgrv;
 		if (geddy.groundgrv < -20) geddy.groundgrv = -20;
@@ -614,21 +640,152 @@ void player::geddyPixelCollision(void)
 	for (int i = geddy.x - 50/2; i < geddy.x + 50/2; ++i)
 	{
 		// 만약 플레이어 y값+크기/2 아래 픽셀이 정해진 색이고 && 땅이 아니면
-		if (GetPixel(getPixel(), i, geddy.y + 50/3 ) == RGB(255, 0, 255) && !geddy.ground)
+		if (GetPixel(getPixel(), i, geddy.y + 50/2 ) == RGB(255, 0, 255) && !geddy.ground)
 		{
 			geddy.ground = true; // 땅이라고 알려줌. 
 			geddy.y += geddy.groundgrv; // 플레이어y += 땅 그래피티 
 			geddy.groundgrv = 0;
+			geddy.geddyState = gIDLE;
 		}
 	}
 	//바텀 
 	for (int i = geddy.x - 50/2; i < geddy.x + 50 /2; ++i)
 	{
-		if (GetPixel(getPixel(), i, geddy.y + 50/3 ) == RGB(255, 0, 255) && geddy.gravity <= 0)
+		if (GetPixel(getPixel(), i, geddy.y + 50/2 ) == RGB(255, 0, 255) && geddy.gravity <= 0)
 		{
 			geddy.y += geddy.gravity;
 			geddy.gravity = 20;
 			break;
 		}
+	}
+}
+
+
+void player::geddyFrameFunc(void)
+{
+	switch (geddy.geddyState)
+	{
+	case gSHOOT:
+		geddy.frameCount++;
+		if (geddy.frameCount > 4)
+		{
+			geddy.frameCount = 0;
+			geddy.bodyFrameX++;
+			if (geddy.bodyFrameX > 5)
+			{
+				geddy.bodyFrameX = 0;
+				geddy.geddyState = gNONE;
+			}
+		}
+		break;
+	case gIDLE:
+		geddy.bodyFrameY = 6;
+		geddy.bodyFrameX = 5;
+		break;
+	case gFALL:
+		geddy.bodyFrameY = 7;
+		geddy.frameCount++;
+		if (geddy.frameCount > 4)
+		{
+			geddy.frameCount = 0;
+			geddy.bodyFrameX++;
+			if (geddy.bodyFrameX > 2)
+			{
+				geddy.bodyFrameX = 0;
+			}
+		}
+		break;
+	case gNONE:
+		break;
+	default:
+		break;
+	}
+}
+
+void player::geddyCastFunc()
+{
+	if (geddy.follow)
+	{
+		if (KEYMANAGER->isOnceKeyUp(MK_RBUTTON))
+		{
+			geddy.cast = true;
+			geddy.showCurve = false;
+			geddy.follow = false;
+			geddy.castGravity = 0;
+		}
+	}
+	if (geddy.cast)
+	{
+		geddy.castGravity += 0.5f;
+		geddy.gravity = 0;
+		geddy.groundgrv = 0;
+		geddy.x += cosf(geddy.angle) *  geddy.speed;
+		geddy.y += -sinf(geddy.angle) * geddy.speed + geddy.castGravity;
+	}
+	if (geddy.ground)
+	{
+		geddy.cast = false;
+		geddy.castGravity = 0;
+	}
+}
+
+//궤적 만들기 
+void player::CurveLineFunc()
+{
+	if (geddy.follow)
+	{
+		if (KEYMANAGER->isStayKeyDown(MK_RBUTTON))
+		{
+			geddy.showCurve = true;
+			geddy.angle = getAngle(geddy.x, geddy.y, _ptMouse.x, _ptMouse.y);
+			curveLine[0].x = geddy.x;
+			curveLine[0].y = geddy.y;
+			curveLine[0].rc = RectMakeCenter(curveLine[0].x, curveLine[0].y, CURVE_CIRCLE_SIZE/3, CURVE_CIRCLE_SIZE/3);
+			curveLine[0].angle = geddy.angle;
+
+			for (int i = 0, j = 1; j < CURVE_CIRCLE_LINE; i++, j++)
+			{
+				/*if (curveLine[i].rc.top < 50)
+				{
+					curveLine[i].rc.top = 51;
+					curveLine[i].angle = curveLine[i].angle *-1;
+				}
+				if (curveLine[i].rc.bottom > 750)
+				{
+					curveLine[i].rc.bottom = 749;
+					curveLine[i].angle = curveLine[i].angle *-1;
+				}
+				if (curveLine[i].rc.right > 750)
+				{
+					curveLine[i].rc.right = 749;
+					curveLine[i].angle = degreeToHodo(180) - curveLine[i].angle;
+				}
+				if (curveLine[i].rc.left < 50)
+				{
+					curveLine[i].rc.left = 51;
+					curveLine[i].angle = degreeToHodo(180) - curveLine[i].angle;
+				}
+*/             if (j == 1) geddy.castGravity = 0.05f;
+			else if (j == 2) geddy.castGravity = 2.0f;
+			else if (j == 3) geddy.castGravity = 4.0f;
+			else if (j == 4) geddy.castGravity = 6.0f;
+			else if (j == 5) geddy.castGravity = 8.0f;
+			else if (j == 6) geddy.castGravity = 12.0f;
+			else if (j == 7) geddy.castGravity = 17.0f;
+			else if (j == 8) geddy.castGravity = 22.0f;
+			else if (j == 9) geddy.castGravity = 30.0f;
+
+				curveLine[j].angle = curveLine[i].angle;
+				curveLine[j].x = cosf(curveLine[i].angle) * CURVE_CIRCLE_SIZE ;
+				curveLine[j].y = -sinf(curveLine[i].angle) * CURVE_CIRCLE_SIZE + geddy.castGravity;
+
+				curveLine[j].x = curveLine[j].x + curveLine[i].x;
+				curveLine[j].y = curveLine[j].y + curveLine[i].y;
+
+				curveLine[j].rc = RectMakeCenter(curveLine[j].x, curveLine[j].y, CURVE_CIRCLE_SIZE/3, CURVE_CIRCLE_SIZE/3);
+			}
+		}// Rbutton
+
+
 	}
 }

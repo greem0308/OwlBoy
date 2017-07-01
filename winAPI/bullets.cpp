@@ -151,7 +151,6 @@ void bulletM1::fire(float x, float y, float angle,
 
 	tagBullet bullets;
 	ZeroMemory(&bullets, sizeof(tagBullet));
-
 	
 	bullets.img = IMAGEMANAGER->addFrameImage("bomb","bomb.bmp", 96*2, 16*2, 6, 1, true, RGB(255, 0, 255));
 	bullets.speed = speed;
