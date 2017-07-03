@@ -42,7 +42,7 @@ HRESULT VellieScene::init(void)
 void VellieScene::release(void)
 {
 	gameNode::release();
-	SAFE_DELETE(_player);
+	//SAFE_DELETE(_player);
 }
 
 void VellieScene::update(void)
@@ -63,9 +63,9 @@ void VellieScene::update(void)
 	//	SCENEMANAGER->changeScene("otusHouseScene");
 	//}
 
-	if (KEYMANAGER->isOnceKeyUp(MK_RBUTTON))
+	if (IntersectRect(&rcTemp, &_player->_player.rc, &door.otusRC))
 	{
-		if (IntersectRect(&rcTemp, &_player->_player.rc, &door.otusRC))
+		if (KEYMANAGER->isOnceKeyUp(MK_RBUTTON))
 		{
 			SCENEMANAGER->changeScene("otusHouseScene");
 		}
