@@ -2,9 +2,12 @@
 #include "gameNode.h"
 #include "animation.h"
 #include "bullets.h"
+#include "button.h"
 
 #define CURVE_CIRCLE_SIZE 30 // 커브 공 사이즈. 커브 사이간격도 조절함. 
 #define CURVE_CIRCLE_LINE 10 // 커브 공 몇개? 
+
+#define Door
 
 enum DIRECTION
 {
@@ -100,10 +103,36 @@ public:
 		FLOAT y;
 	};
 	tagCurveLine curveLine[50];
+	
+	struct tagDoorPos
+	{
 
-	int tempX;
+	};
+	//tagDoorPos doorPos[];
+
+	// sound __________________________________________________________________________________________________________
+	button* soundBtn;
+
+	bool soundOpen;
+	static void cbSoundBtn();
+	
+	char* NowPlayList;
+	virtual void soundInit();
+	virtual void soundUpdate();
+	virtual void soundRender();
+
+	// inventory ______________________________________________________________________________________________________
+	button* inventoryBtn;
+	
+	bool inventoryOpen;
+	static void cbInventoryBtn(void);
+
+	virtual void invenInit();
+	virtual void invenUpdate();
+	virtual void invenRender();
+
 public:
-	virtual HRESULT init(void);
+	virtual HRESULT init(float x, float y);
 	virtual void release(void);
 	virtual void update(void);
 	virtual void render(void);
@@ -121,6 +150,8 @@ public:
 	// database 의 변수값을 플레이어 변수로 셋한다.. 
 	void setHP(int hp) { _player.hp = hp; }
 	void setCoin(int coin) { _player.coin = coin; }
+	void setsoundOpen(bool soundOpen) { soundOpen = soundOpen; }
+	void setinventoryOpen(int inventoryOpen) { inventoryOpen = inventoryOpen; }
 
 	virtual void removeMissile(int arrNum);
 

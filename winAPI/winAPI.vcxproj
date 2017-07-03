@@ -87,6 +87,8 @@
     <ClInclude Include="database.h" />
     <ClInclude Include="dungeonScene.h" />
     <ClInclude Include="enemy.h" />
+    <ClInclude Include="etcObject.h" />
+    <ClInclude Include="etcObjectManager.h" />
     <ClInclude Include="eventBridgeScene.h" />
     <ClInclude Include="eventScene.h" />
     <ClInclude Include="frameAnimation.h" />
@@ -96,6 +98,7 @@
     <ClInclude Include="image.h" />
     <ClInclude Include="imageManager.h" />
     <ClInclude Include="item.h" />
+    <ClInclude Include="itemManager.h" />
     <ClInclude Include="keyAnimationManager.h" />
     <ClInclude Include="keyManager.h" />
     <ClInclude Include="otusHouseScene.h" />
@@ -115,6 +118,7 @@
     <ClInclude Include="txtDataManager.h" />
     <ClInclude Include="utils.h" />
     <ClInclude Include="VellieScene.h" />
+    <ClInclude Include="wrappedExtern.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="action.cpp" />
@@ -126,6 +130,8 @@
     <ClCompile Include="database.cpp" />
     <ClCompile Include="dungeonScene.cpp" />
     <ClCompile Include="enemy.cpp" />
+    <ClCompile Include="etcObject.cpp" />
+    <ClCompile Include="etcObjectManager.cpp" />
     <ClCompile Include="eventBridgeScene.cpp" />
     <ClCompile Include="eventScene.cpp" />
     <ClCompile Include="frameAnimation.cpp" />
@@ -135,6 +141,7 @@
     <ClCompile Include="image.cpp" />
     <ClCompile Include="imageManager.cpp" />
     <ClCompile Include="item.cpp" />
+    <ClCompile Include="itemManager.cpp" />
     <ClCompile Include="keyAnimationManager.cpp" />
     <ClCompile Include="keyManager.cpp" />
     <ClCompile Include="otusHouseScene.cpp" />
@@ -154,6 +161,7 @@
     <ClCompile Include="utils.cpp" />
     <ClCompile Include="VellieScene.cpp" />
     <ClCompile Include="winAPI.cpp" />
+    <ClCompile Include="wrappedExtern.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="winAPI.rc" />

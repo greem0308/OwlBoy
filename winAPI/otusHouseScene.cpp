@@ -20,7 +20,7 @@ HRESULT otusHouseScene::init(void)
 	backgroundBlue = IMAGEMANAGER->addImage("otusPixelBlue", "Scene/otusPixelBlue.bmp", 1280, 720, false);
 
 	_player = new player;
-	_player->init();
+	_player->init(100,100);
 
 	frameCount = 0;
 	CurrentX = 0;
@@ -64,11 +64,12 @@ void otusHouseScene::update(void)
 
 void otusHouseScene::render(void)
 {
-	//IMAGEMANAGER->findImage("mapImage")->render(getPixel()); // µÚ¿¡ ÇÈ¼¿¹è°æµé ¾ÈµÇ°Ô²û.
+	IMAGEMANAGER->findImage("mapImage")->render(getPixel()); // µÚ¿¡ ÇÈ¼¿¹è°æµé ¾ÈµÇ°Ô²û.
+	IMAGEMANAGER->findImage("mapImage")->render(getMemDC()); // µÚ¿¡ ÇÈ¼¿¹è°æµé ¾ÈµÇ°Ô²û.
 
 	// ÇöÀç ÇÈ¼¿ ¹è°æ.
 	IMAGEMANAGER->findImage("otusPixelPink")->render(getPixel()); // ºÐÈ«.
-	IMAGEMANAGER->findImage("otusPixelBlue")->render(getPixelBlue()); // ÆÄ¶û.
+	//IMAGEMANAGER->findImage("otusPixelBlue")->render(getPixelBlue()); // ÆÄ¶û.
 
 	IMAGEMANAGER->findImage("otusHouse")->frameRender(getMemDC(),0,0,CurrentX,0); // ¹è°æ. 
 	

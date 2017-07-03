@@ -8,6 +8,7 @@ HINSTANCE _hInstance;
 HWND _hWnd;
 POINT _ptMouse;
 bool _leftButtonDown;
+bool _soundOpen;
 
 gameStudy _gs;
 

@@ -49,6 +49,8 @@ void database::loadDatabase(void)
 			ele.y = atoi(vTemp[i + 3].c_str());
 			ele.hp = atoi(vTemp[i + 4].c_str());
 			ele.coin = atoi(vTemp[i + 5].c_str());
+			ele.soundOpen = atoi(vTemp[i + 6].c_str());
+			ele.inventoryOpen = atoi(vTemp[i + 7].c_str());
 
 			//arrElements vElement;
 

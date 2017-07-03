@@ -11,25 +11,37 @@ player::~player()
 {
 }
 
-HRESULT player::init(void)
+HRESULT player::init(float x, float y)
 {
 	gameNode::init();
+	//sound ____________________________________________________________________________________________
+	soundInit();
+
+	//inventory____________________________________________________________________________________________
+	invenInit();
+
+	//player____________________________________________________________________________________________
 
 	this->setHP(DATABASE->getElementData("player")->hp);
 	this->setCoin(DATABASE->getElementData("player")->coin);
+	this->setsoundOpen(DATABASE->getElementData("player")->soundOpen);
+	this->setinventoryOpen(DATABASE->getElementData("player")->inventoryOpen);
 
-	_player.imgR =IMAGEMANAGER->addFrameImage("playerR", "player/playerRight.bmp", (100 * 20)*2, (100 * 25)*2, 20, 25, true, RGB(255, 0, 255));
-	_player.imgL = IMAGEMANAGER->addFrameImage("playerL", "player/playerLeft.bmp", (100 * 20) * 2, (100 * 25) * 2, 20, 25, true, RGB(255, 0, 255));
+	_player.imgR =IMAGEMANAGER->addFrameImage("playerR", "player/playerRight.bmp", (100 * 20)*1.8, (100 * 25)*1.8, 20, 25, true, RGB(255, 0, 255));
+	_player.imgL = IMAGEMANAGER->addFrameImage("playerL", "player/playerLeft.bmp", (100 * 20) * 1.8, (100 * 25) * 1.8, 20, 25, true, RGB(255, 0, 255));
 	
 	IMAGEMANAGER->addImage("bullet","player/bullet.bmp",50,50,true,RGB(255,0,255));
 	IMAGEMANAGER->addFrameImage("armGun", "player/armGun.bmp", 50*16*3, 50*5 *3,16,6, true, RGB(255, 0, 255));
 	//IMAGEMANAGER->addFrameImage("geddyR","player/geddyRight.bmp",100 *6 * 1.5 ,100 * 3 * 1.5,6,3,true,RGB(255,0,255));
 	//IMAGEMANAGER->addFrameImage("geddyL", "player/geddyLeft.bmp", 100 * 6 * 1.5, 100 * 3 * 1.5, 6, 3, true, RGB(255, 0, 255));
-	IMAGEMANAGER->addFrameImage("geddy", "player/geddy.bmp", 100 * 6 * 1.5, 100 * 8 * 1.5, 6, 8, true, RGB(255, 0, 255));
+	IMAGEMANAGER->addFrameImage("geddy", "player/geddy.bmp", 100 * 6 * 1.4, 100 * 8 * 1.4, 6, 8, true, RGB(255, 0, 255));
+
+	IMAGEMANAGER->addImage("hp", "UI/hp.bmp",85,17, true, RGB(255, 0, 255));
+	IMAGEMANAGER->addImage("hpBar", "UI/hpBar.bmp", 140, 50, true, RGB(255, 0, 255));
 
 	// player __________________________________________________________________________________________________________
-	_player.x = 550;
-	_player.y = 250;
+	_player.x = x;
+	_player.y = y;
 	// database 에 해놓은걸 또 초기화하면 안되니까 주석처리해놨음. 
 	//_player.hp = 0;
 	//_player.coin = 0;
@@ -86,8 +98,6 @@ HRESULT player::init(void)
 	geddy.groundgrv = 0;
 	geddy.showCurve = false; // 커브 보여줄때 구분 불.
 
-
-	tempX = 200;
 return S_OK;
 }
 
@@ -100,29 +110,37 @@ void player::update(void)
 {
 	gameNode::update();
 	_player._fire->update();
+	soundBtn->update();
+	inventoryBtn->update();
+
 	//ani->frameUpdate(TIMEMANAGER->getElapsedTime());
 
 	// 총 위치.
 	geddy.gunX = geddy.x;
 	geddy.gunY = geddy.y;
 	// 플레이어, 게디 렉트, 총 렉트
-	_player.rc = RectMakeCenter(_player.x, _player.y, _player.imgR->getFrameWidth() / 4, _player.imgR->getFrameHeight() / 3);
-	geddy.rc = RectMakeCenter(geddy.x, geddy.y, geddy.radius*2, geddy.radius*2);
-	geddy.gunRC = RectMakeCenter(geddy.gunX, geddy.gunY, geddy.gunRadius*2, geddy.gunRadius*2);
+	_player.rc = RectMakeCenter(_player.x, _player.y, _player.imgR->getFrameWidth() / 4, _player.imgR->getFrameHeight() / 4);
+	geddy.rc = RectMakeCenter(geddy.x, geddy.y, geddy.radius * 2, geddy.radius * 2);
+	geddy.gunRC = RectMakeCenter(geddy.gunX, geddy.gunY, geddy.gunRadius * 2, geddy.gunRadius * 2);
 
 	//player ___________________________________________
 	keyControl();
 	jump();
 	PixelCollision();
-	frameFunc(); 
+	frameFunc();
 
 	//geddy ___________________________________________
 	geddyFunc(); //게디 팔든 프레임, 총쏨. 
-	geddyPixelCollision(); 
+	geddyPixelCollision();
 	geddyFrameFunc(); // 게디 몸 프레임. 
 	CurveLineFunc(); // 던질때 커브 라인 그리는 함수
 	geddyCastFunc(); // 던지는 조건,키컨트롤.
-	
+
+
+	//sound_inven_________________________________________________________________
+	soundUpdate();
+	invenUpdate();
+
 }
 
 void player::render(void)
@@ -133,19 +151,15 @@ void player::render(void)
 
 	if (_player.direction == RIGHT)
 	{
-		IMAGEMANAGER->findImage("playerR")->frameRender(getMemDC(), _player.rc.left - 70, _player.rc.top - 70,
+		IMAGEMANAGER->findImage("playerR")->frameRender(getMemDC(), _player.rc.left - 70, _player.rc.top - 72,
 			_player.currentX, _player.state);
-		//IMAGEMANAGER->findImage("geddyR")->frameRender(getMemDC(), geddy.rc.left - 50, geddy.rc.top - 57, 0, 0);
-		
 	}
 	if (_player.direction == LEFT)
 	{
-		IMAGEMANAGER->findImage("playerL")->frameRender(getMemDC(), _player.rc.left - 75, _player.rc.top - 70,
+		IMAGEMANAGER->findImage("playerL")->frameRender(getMemDC(), _player.rc.left - 75, _player.rc.top - 72,
 			_player.currentX, _player.state);
-		//IMAGEMANAGER->findImage("geddyL")->frameRender(getMemDC(), geddy.rc.left - 50, geddy.rc.top - 57, 0, 0);
 	}
-	
-	IMAGEMANAGER->findImage("geddy")->frameRender(getMemDC(), geddy.rc.left - 50, geddy.rc.top - 57, geddy.bodyFrameX, geddy.bodyFrameY);
+	IMAGEMANAGER->findImage("geddy")->frameRender(getMemDC(), geddy.rc.left - 50, geddy.rc.top - 60, geddy.bodyFrameX, geddy.bodyFrameY);
 
 	IMAGEMANAGER->findImage("armGun")->frameRender(getMemDC(), geddy.rc.left - 50, geddy.rc.top-40, geddy.gunFrameX, _player.shootCurrentY);
 
@@ -156,11 +170,19 @@ void player::render(void)
 	HFONT myFont = CreateFont(25, 0, 0, 0, 1, 0, 0, 0, HANGEUL_CHARSET, 3, 2, 1, VARIABLE_PITCH | FF_ROMAN, TEXT("나눔바른고딕"));
 	SelectObject(getMemDC(), myFont);
 
+	//hp
 	sprintf(str, "%d", _player.hp);
-	TextOut(getMemDC(), 50, 50, str, strlen(str));
+	TextOut(getMemDC(), 50, 150, str, strlen(str));
 
+	//coin
 	sprintf(str, "%d", _player.coin);
-	TextOut(getMemDC(), 150, 50, str, strlen(str));
+	TextOut(getMemDC(), 100, 150, str, strlen(str));
+
+	//x,y
+	sprintf(str, "%0.2f", _player.x);
+	TextOut(getMemDC(), 100, 250, str, strlen(str));
+	sprintf(str, "%0.2f", _player.y);
+	TextOut(getMemDC(), 250, 250, str, strlen(str));
 
 	// 던질때 커브 원형들 그리기.
 	if (geddy.showCurve)
@@ -171,6 +193,16 @@ void player::render(void)
 		}
 	}
 	_player._fire->render();
+
+	//hp
+	IMAGEMANAGER->findImage("hpBar")->render(getMemDC(),20,20);
+	IMAGEMANAGER->findImage("hp")->render(getMemDC(),70,35);
+	soundBtn->render();
+	inventoryBtn->render();
+
+	//sound____inven____________________________________________________________________
+	soundRender();
+	invenRender();
 }
 
 void player::keyControl(void)
@@ -372,7 +404,7 @@ void player::jump(void)
 {
 	if (_player.jump)
 	{
-		_player.gravity -= 1.4f;
+		_player.gravity -= 2.0f;
 		_player.y -= _player.gravity;
 		if (_player.gravity < -20) _player.gravity = -20;
 	}
@@ -691,10 +723,10 @@ void player::geddyPixelCollision(void)
 
 	////geddy__________________________________________________________________________________________________
 	// i = x - 크기절반; i< x + 크기의 절반; i++
-	for (int i = geddy.x - 50/2; i < geddy.x + 50/2; ++i)
+	for (int i = geddy.x - geddy.radius; i < geddy.x + geddy.radius; ++i)
 	{
 		// 만약 플레이어 y값+크기/2 아래 픽셀이 정해진 색이고 && 땅이 아니면
-		if (GetPixel(getPixel(), i, geddy.y + 50/2 ) == RGB(255, 0, 255) && !geddy.ground)
+		if (GetPixel(getPixel(), i, geddy.y + geddy.radius ) == RGB(255, 0, 255) && !geddy.ground)
 		{
 			geddy.ground = true; // 땅이라고 알려줌. 
 			geddy.y += geddy.groundgrv; // 플레이어y += 땅 그래피티 
@@ -703,9 +735,9 @@ void player::geddyPixelCollision(void)
 		}
 	}
 	//바텀 
-	for (int i = geddy.x - 50/2; i < geddy.x + 50 /2; ++i)
+	for (int i = geddy.x - geddy.radius; i < geddy.x + geddy.radius; ++i)
 	{
-		if (GetPixel(getPixel(), i, geddy.y + 50/2 ) == RGB(255, 0, 255) && geddy.gravity <= 0)
+		if (GetPixel(getPixel(), i, geddy.y + geddy.radius) == RGB(255, 0, 255) && geddy.gravity <= 0)
 		{
 			geddy.y += geddy.gravity;
 			geddy.gravity = 20;
@@ -799,27 +831,7 @@ void player::CurveLineFunc()
 
 			for (int i = 0, j = 1; j < CURVE_CIRCLE_LINE; i++, j++)
 			{
-				/*if (curveLine[i].rc.top < 50)
-				{
-					curveLine[i].rc.top = 51;
-					curveLine[i].angle = curveLine[i].angle *-1;
-				}
-				if (curveLine[i].rc.bottom > 750)
-				{
-					curveLine[i].rc.bottom = 749;
-					curveLine[i].angle = curveLine[i].angle *-1;
-				}
-				if (curveLine[i].rc.right > 750)
-				{
-					curveLine[i].rc.right = 749;
-					curveLine[i].angle = degreeToHodo(180) - curveLine[i].angle;
-				}
-				if (curveLine[i].rc.left < 50)
-				{
-					curveLine[i].rc.left = 51;
-					curveLine[i].angle = degreeToHodo(180) - curveLine[i].angle;
-				}
-*/             if (j == 1) geddy.castGravity = 0.05f;
+           if (j == 1) geddy.castGravity = 0.05f;
 			else if (j == 2) geddy.castGravity = 2.0f;
 			else if (j == 3) geddy.castGravity = 4.0f;
 			else if (j == 4) geddy.castGravity = 6.0f;
@@ -839,7 +851,110 @@ void player::CurveLineFunc()
 				curveLine[j].rc = RectMakeCenter(curveLine[j].x, curveLine[j].y, CURVE_CIRCLE_SIZE/3, CURVE_CIRCLE_SIZE/3);
 			}
 		}// Rbutton
-
-
 	}
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Sound _______________________________________________________________________________________________________
+void player::soundInit()
+{
+	// 사운드창 열었냐?
+	//_soundOpen = false; 
+	soundOpen = false;
+
+	//사운드창 배경.
+	IMAGEMANAGER->addImage("soundOption","UI/soundOption.bmp",WINSIZEX,WINSIZEY,true,RGB(255,0,255));
+
+	//버튼 
+	IMAGEMANAGER->addFrameImage("soundBtn", "UI/soundBtn.bmp", 133/1.4, 74 / 1.4, 1, 2, true, RGB(255, 0, 255));
+
+	soundBtn = new button;
+	soundBtn->init("soundBtn", 1210, 680, PointMake(0, 1),
+		PointMake(0, 0), cbSoundBtn);
+
+	// 배경음. 
+	SOUNDMANAGER->addSound("0", "sound/startScene.flac", true, true);
+	SOUNDMANAGER->addSound("1", "sound/otusHouseScene.flac", true, true);
+	SOUNDMANAGER->addSound("2", "sound/vellieScene.flac", true, true);
+	SOUNDMANAGER->addSound("3", "sound/Buccanary's Shop.flac", true, true);
+	SOUNDMANAGER->addSound("4", "sound/eventScene.flac", true, true);
+	SOUNDMANAGER->addSound("5", "sound/dunGeonScene.flac", true, true);
+	SOUNDMANAGER->addSound("6", "sound/Bomboman.flac", true, true);
+	SOUNDMANAGER->addSound("7", "sound/bossScene.flac", true, true);
+
+	NowPlayList = "0";
+}
+void player::soundUpdate()
+{
+	if (soundOpen)
+	{
+		if (KEYMANAGER->isOnceKeyDown('T'))
+		{
+			if (!SOUNDMANAGER->isPlay("0"))
+			{
+				SOUNDMANAGER->play("0");
+			}
+		}
+		if (KEYMANAGER->isOnceKeyDown(VK_RETURN))
+		{
+			DATABASE->getElementData("player")->soundOpen = false;
+		}
+	}
+	soundOpen = DATABASE->getElementData("player")->soundOpen;
+}
+
+void player::soundRender()
+{
+	if (soundOpen)
+	{
+		//_soundOpen = true;
+
+		IMAGEMANAGER->findImage("soundOption")->render(getMemDC());
+	}
+}
+
+void player::cbSoundBtn()
+{
+	DATABASE->getElementData("player")->soundOpen = true;
+}
+
+// Inventory _______________________________________________________________________________________________________
+void player::invenInit()
+{
+	inventoryOpen = false;
+
+	IMAGEMANAGER->addFrameImage("inventoryBtn", "UI/inventoryBtn.bmp", 133 / 1.4, 74 / 1.4, 1, 2, true, RGB(255, 0, 255));
+	inventoryBtn = new button;
+	inventoryBtn->init("inventoryBtn", 1100, 680, PointMake(0, 1),
+		PointMake(0, 0), cbInventoryBtn);
+
+	// 인벤토리 창
+	IMAGEMANAGER->addImage("inventoryOption", "UI/inventoryOption.bmp", WINSIZEX, WINSIZEY, true, RGB(255, 0, 255));
+}
+
+void player::invenUpdate()
+{
+	if (inventoryOpen)
+	{
+		if (KEYMANAGER->isOnceKeyDown(VK_RETURN))
+		{
+			DATABASE->getElementData("player")->inventoryOpen = false;
+		}
+	}
+	inventoryOpen = DATABASE->getElementData("player")->inventoryOpen;
+}
+
+void player::invenRender()
+{
+	if (inventoryOpen)
+	{
+		IMAGEMANAGER->findImage("inventoryOption")->render(getMemDC());
+	}
+}
+
+void player::cbInventoryBtn()
+{
+	DATABASE->getElementData("player")->inventoryOpen = true;
 }

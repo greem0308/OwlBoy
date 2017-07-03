@@ -13,6 +13,9 @@ public: // private을 퍼블릭으로 푼다음에..
 	float y;
 	int hp;
 	int coin;
+	//사운드
+	bool soundOpen;
+	bool inventoryOpen;
 
 	elements(void) {};
 	~elements(void) {};

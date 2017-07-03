@@ -16,7 +16,7 @@ HRESULT dungeonScene::init(void)
 	gameNode::init();
 
 	_player = new player;
-	_player->init();
+	_player->init(100,100);
 
 	rc = RectMake(WINSIZEX / 2 - 300, WINSIZEY / 2, 50, 50);
 	return S_OK;

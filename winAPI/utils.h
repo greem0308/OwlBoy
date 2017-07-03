@@ -23,6 +23,11 @@
 #define FLOAT_EQUAL(f1, f2) (fabs(f1 - f2) <= FLOAT_EPSILON)
 //fabs는 소수점의 차 절대값을 반환하는 함수이다.
 
+struct tagStat1
+{
+	float speed, angle, hpMin, hpMax;
+};
+
 namespace MY_UTIL
 {
 	//거리 구한다

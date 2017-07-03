@@ -75,7 +75,7 @@ extern HINSTANCE	_hInstance; //프로그램 인스턴스
 extern HWND			_hWnd;		//윈도우 핸들
 extern POINT		_ptMouse;	//마우스
 extern bool			_leftButtonDown;
-
+extern bool         _soundOpen; // 사운드 데이터베이스에 넣고 콜백으로 하려다가 빡쳐서 그냥 이걸로함. 나중에 수정할시간이 있었으면 좋겠다.
 
 #define degreeToHodo(a) (((a)*(3.141592))/(180))
 #define hodoToToDegree(a) (((180)*(a))/(3.141592))
