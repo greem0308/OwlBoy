@@ -10,6 +10,14 @@ POINT _ptMouse;
 bool _leftButtonDown;
 bool _soundOpen;
 
+// 다른씬에서 마을로 넘어올때 받는 선택하는 좌표값.
+velliToDoorPos DoorPos[7];
+
+int toVellieDoor;
+int startDoor;
+int doorFrame;
+
+
 gameStudy _gs;
 
 //================================================

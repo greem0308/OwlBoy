@@ -8,17 +8,24 @@ public:
 
 	player* _player;
 	
-	RECT rc;
-	
 	//카메라에 연동시켜야하므로 x,y,가 필요함.
 	struct structDoor
 	{
-		float otusX, otusY;
-		RECT otusRC; //오투스하우스로 들어가는 렉트.
+		// 0.마을,1.오투스집. 2.상점. 3.랩, 4.붐버맨, 5. 이벤트브릿지, 6.던전
+		float x,y;
+		RECT rc;
 	};
-	structDoor door;
+	structDoor door[7];
+
+	// 플레이어 위치에서 루프만 할 하늘배경
+	image* skyBG; //기본 뒤에 파랑.
+	image* skyLoopFront; 
+	image* skyLoopMiddle;
+	image* skyLoopBack;
 
 	image* _background;
+	image* _backgroundBehind;
+
 	image* _backgroundCheck;
 
 	int cameraX;

@@ -1,3 +1,6 @@
 #pragma once
 
-extern tagStat1 stat1;
+extern velliToDoorPos doorPos[6];
+
+extern int toVellieDoor;
+extern int startDoor;

@@ -5,6 +5,10 @@
 #include "startScene.h"
 #include "otusHouseScene.h"
 #include "VellieScene.h"
+#include "storeScene.h"
+#include "labScene.h"
+#include "bombamanScene.h"
+#include "eventBridgeScene.h"
 
 class gameStudy : public gameNode
 {

@@ -17,11 +17,15 @@ HRESULT gameStudy::init(void)
 	IMAGEMANAGER->addImage("space2", "space2.bmp", WINSIZEX, WINSIZEY, true, RGB(255, 0, 255));
 	IMAGEMANAGER->addImage("mapImage", "backImage.bmp", WINSIZEX, WINSIZEY);
 
-	//¾À »ý¼º
+	//¾À »ý¼º 
 	SCENEMANAGER->addScene("test", new test);
 	SCENEMANAGER->addScene("startScene", new startScene);
 	SCENEMANAGER->addScene("otusHouseScene", new otusHouseScene);
 	SCENEMANAGER->addScene("VellieScene", new VellieScene);
+	SCENEMANAGER->addScene("storeScene", new storeScene);
+	SCENEMANAGER->addScene("labScene", new labScene);
+	SCENEMANAGER->addScene("bombamanScene", new bombamanScene);
+	SCENEMANAGER->addScene("eventBridgeScene", new eventBridgeScene);
 
 	//ÇöÀç ¾ÀÀ» _sceneOneÀ¸·Î ¼³Á¤
 	SCENEMANAGER->changeScene("startScene");

@@ -1,4 +1,7 @@
 #include "stdAfx.h"
 #include "wrappedExtern.h"
 
-tagStat1 stat1;
+velliToDoorPos doorPos[6];
+
+int toVellieDoor;
+int startDoor;

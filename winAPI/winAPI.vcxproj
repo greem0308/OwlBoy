@@ -80,6 +80,7 @@
     <ClInclude Include="action.h" />
     <ClInclude Include="actionManager.h" />
     <ClInclude Include="animation.h" />
+    <ClInclude Include="bombamanScene.h" />
     <ClInclude Include="BossScene.h" />
     <ClInclude Include="bullets.h" />
     <ClInclude Include="button.h" />
@@ -101,6 +102,7 @@
     <ClInclude Include="itemManager.h" />
     <ClInclude Include="keyAnimationManager.h" />
     <ClInclude Include="keyManager.h" />
+    <ClInclude Include="labScene.h" />
     <ClInclude Include="otusHouseScene.h" />
     <ClInclude Include="player.h" />
     <ClInclude Include="progressBar.h" />
@@ -111,6 +113,7 @@
     <ClInclude Include="soundManager.h" />
     <ClInclude Include="startScene.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="storeScene.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="test.h" />
     <ClInclude Include="timeManager.h" />
@@ -118,12 +121,12 @@
     <ClInclude Include="txtDataManager.h" />
     <ClInclude Include="utils.h" />
     <ClInclude Include="VellieScene.h" />
-    <ClInclude Include="wrappedExtern.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="action.cpp" />
     <ClCompile Include="actionManager.cpp" />
     <ClCompile Include="animation.cpp" />
+    <ClCompile Include="bombamanScene.cpp" />
     <ClCompile Include="BossScene.cpp" />
     <ClCompile Include="bullets.cpp" />
     <ClCompile Include="button.cpp" />
@@ -144,6 +147,7 @@
     <ClCompile Include="itemManager.cpp" />
     <ClCompile Include="keyAnimationManager.cpp" />
     <ClCompile Include="keyManager.cpp" />
+    <ClCompile Include="labScene.cpp" />
     <ClCompile Include="otusHouseScene.cpp" />
     <ClCompile Include="player.cpp" />
     <ClCompile Include="progressBar.cpp" />
@@ -154,6 +158,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="storeScene.cpp" />
     <ClCompile Include="test.cpp" />
     <ClCompile Include="timeManager.cpp" />
     <ClCompile Include="timer.cpp" />
@@ -161,7 +166,6 @@
     <ClCompile Include="utils.cpp" />
     <ClCompile Include="VellieScene.cpp" />
     <ClCompile Include="winAPI.cpp" />
-    <ClCompile Include="wrappedExtern.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="winAPI.rc" />

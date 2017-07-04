@@ -166,7 +166,7 @@ void player::render(void)
 	char str[128];
 	SetTextAlign(getMemDC(), TA_RIGHT);
 	SetBkMode(getMemDC(), TRANSPARENT);
-	SetTextColor(getMemDC(), RGB(20,10,0));
+	SetTextColor(getMemDC(), RGB(20,10,200));
 	HFONT myFont = CreateFont(25, 0, 0, 0, 1, 0, 0, 0, HANGEUL_CHARSET, 3, 2, 1, VARIABLE_PITCH | FF_ROMAN, TEXT("나눔바른고딕"));
 	SelectObject(getMemDC(), myFont);
 
@@ -183,6 +183,12 @@ void player::render(void)
 	TextOut(getMemDC(), 100, 250, str, strlen(str));
 	sprintf(str, "%0.2f", _player.y);
 	TextOut(getMemDC(), 250, 250, str, strlen(str));
+
+	sprintf(str, "toVellieDoor %d", toVellieDoor);
+	TextOut(getMemDC(), 100, 350, str, strlen(str));
+	sprintf(str, "startDoor %d", startDoor);
+	TextOut(getMemDC(), 250, 350, str, strlen(str));
+
 
 	// 던질때 커브 원형들 그리기.
 	if (geddy.showCurve)
@@ -745,7 +751,6 @@ void player::geddyPixelCollision(void)
 		}
 	}
 }
-
 
 void player::geddyFrameFunc(void)
 {

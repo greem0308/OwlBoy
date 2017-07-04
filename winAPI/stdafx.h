@@ -81,4 +81,21 @@ extern bool         _soundOpen; // 사운드 데이터베이스에 넣고 콜백으로 하려다가 
 #define hodoToToDegree(a) (((180)*(a))/(3.141592))
 
 
+struct velliToDoorPos
+{
+	float x, y;
+};
+// 다른씬에서 마을로 넘어올때 받는 선택하는 좌표값.
+extern velliToDoorPos DoorPos[7];
+
+// 다른씬에서 마을로 넘어올때 받는 번호값. 이 번호가 위 구조체의 번호로 들어감.
+// init에선 0. 0은 마을로 돌아올때 초기화시키려는 것. 
+extern int toVellieDoor;
+
+// 업데이트에서 플레이어 좌표값을 위의 번호에 맞는 구조체 좌표로 넣어준다음에 시작하게할 불 
+extern int startDoor;
+
+// 시작 불을 트루시키기위해 있는 장치.. 
+extern int doorFrame;
+
 // TODO: 프로그램에 필요한 추가 헤더는 여기에서 참조합니다.

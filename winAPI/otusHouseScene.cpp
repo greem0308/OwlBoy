@@ -20,12 +20,13 @@ HRESULT otusHouseScene::init(void)
 	backgroundBlue = IMAGEMANAGER->addImage("otusPixelBlue", "Scene/otusPixelBlue.bmp", 1280, 720, false);
 
 	_player = new player;
-	_player->init(100,100);
+	_player->init(400,200);
 
 	frameCount = 0;
 	CurrentX = 0;
 
 	rc = RectMake(450,480,50,90);
+
 	return S_OK;
 }
 
@@ -46,6 +47,8 @@ void otusHouseScene::update(void)
 		if (KEYMANAGER->isOnceKeyDown(MK_RBUTTON))
 		{
 			DATABASE->getElementData("player")->hp = _player->_player.hp;
+			toVellieDoor = 1;
+			startDoor = 0;
 			SCENEMANAGER->changeScene("VellieScene");
 		}
 	}
