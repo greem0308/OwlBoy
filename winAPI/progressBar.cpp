@@ -18,8 +18,8 @@ HRESULT progressBar::init(int x, int y)
 	_x = x;
 	_y = y;
 
-	_barUp = IMAGEMANAGER->findImage("gaugeUp");
-	_barDown = IMAGEMANAGER->findImage("gaugeDown");
+	_barUp = IMAGEMANAGER->findImage("hp");
+	_barDown = IMAGEMANAGER->findImage("maxHP");
 
 	_rc = RectMake(_x, _y, _barDown->getWidth(), _barDown->getHeight());
 

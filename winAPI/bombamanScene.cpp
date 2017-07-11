@@ -44,9 +44,9 @@ void bombamanScene::update(void)
 	RECT rcTemp;
 	if (IntersectRect(&rcTemp, &_player->_player.rc, &rc))
 	{
-		if (KEYMANAGER->isOnceKeyDown(MK_RBUTTON))
+		if (KEYMANAGER->isOnceKeyUp(MK_RBUTTON))
 		{
-			DATABASE->getElementData("player")->hp = _player->_player.hp;
+			DATABASE->getElementData("player")->currentHP = _player->_player.currentHP;
 			toVellieDoor = 4;
 			startDoor = 0;
 			SCENEMANAGER->changeScene("VellieScene");

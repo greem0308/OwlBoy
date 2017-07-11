@@ -35,7 +35,7 @@ void dungeonScene::update(void)
 
 	if (KEYMANAGER->isOnceKeyDown(MK_LBUTTON))
 	{
-		DATABASE->getElementData("player")->hp = _player->_player.hp;
+		DATABASE->getElementData("player")->currentHP = _player->_player.currentHP;
 		SCENEMANAGER->changeScene("VellieScene");
 	}
 }

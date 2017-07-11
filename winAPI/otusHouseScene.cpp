@@ -26,7 +26,7 @@ HRESULT otusHouseScene::init(void)
 	CurrentX = 0;
 
 	rc = RectMake(450,480,50,90);
-
+	
 	return S_OK;
 }
 
@@ -40,13 +40,12 @@ void otusHouseScene::update(void)
 {
 	gameNode::update();
 	_player->update();
-
 	RECT rcTemp;
 	if (IntersectRect(&rcTemp, &_player->_player.rc, &rc))
 	{
-		if (KEYMANAGER->isOnceKeyDown(MK_RBUTTON))
+		if (KEYMANAGER->isOnceKeyUp(MK_RBUTTON))
 		{
-			DATABASE->getElementData("player")->hp = _player->_player.hp;
+			DATABASE->getElementData("player")->currentHP = _player->_player.currentHP;
 			toVellieDoor = 1;
 			startDoor = 0;
 			SCENEMANAGER->changeScene("VellieScene");
@@ -63,6 +62,8 @@ void otusHouseScene::update(void)
 			CurrentX = 0;
 		}
 	}
+
+
 }
 
 void otusHouseScene::render(void)
@@ -74,9 +75,9 @@ void otusHouseScene::render(void)
 	IMAGEMANAGER->findImage("otusPixelPink")->render(getPixel()); // ºÐÈ«.
 	//IMAGEMANAGER->findImage("otusPixelBlue")->render(getPixelBlue()); // ÆÄ¶û.
 
-	IMAGEMANAGER->findImage("otusHouse")->frameRender(getMemDC(),0,0,CurrentX,0); // ¹è°æ. 
-	
-	_player->render();
-	Rectangle(getMemDC(),rc.left,rc.top,rc.right,rc.bottom);
+	IMAGEMANAGER->findImage("otusHouse")->frameRender(getMemDC(), 0, 0, CurrentX, 0); // ¹è°æ. 
 
+	_player->render();
+	Rectangle(getMemDC(), rc.left, rc.top, rc.right, rc.bottom);
 }
+

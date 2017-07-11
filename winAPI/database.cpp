@@ -45,12 +45,13 @@ void database::loadDatabase(void)
 			// 맵인데, insert는 백터의 푸시백 같은 역할(키값(스트링으로 넣는게 좋음), 세컨드값. )
 			_mTotalElement.insert(make_pair(vTemp[i + 1], ele));
 
-			ele.x = atoi(vTemp[i + 2].c_str());
-			ele.y = atoi(vTemp[i + 3].c_str());
-			ele.hp = atoi(vTemp[i + 4].c_str());
-			ele.coin = atoi(vTemp[i + 5].c_str());
-			ele.soundOpen = atoi(vTemp[i + 6].c_str());
-			ele.inventoryOpen = atoi(vTemp[i + 7].c_str());
+			ele.currentHP = atoi(vTemp[i + 2].c_str());
+			ele.maxHP = atoi(vTemp[i + 3].c_str());
+			ele.speed = atoi(vTemp[i + 4].c_str());
+			ele.shootSpeed = atoi(vTemp[i+5].c_str());
+			ele.coin = atoi(vTemp[i + 6].c_str());
+			ele.soundOpen = atoi(vTemp[i + 7].c_str());
+			ele.inventoryOpen = atoi(vTemp[i + 8].c_str());
 
 			//arrElements vElement;
 

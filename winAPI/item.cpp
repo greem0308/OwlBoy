@@ -11,10 +11,10 @@ item::~item()
 {
 }
 
-HRESULT item::init(void)
+
+HRESULT item::init(float x, float y)
 {
 	gameNode::init();
-
 
 	return S_OK;
 }
@@ -27,9 +27,9 @@ void item::release(void)
 void item::update(void)
 {
 	gameNode::update();
-
 }
 
 void item::render(void)
 {
+
 }

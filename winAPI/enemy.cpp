@@ -11,7 +11,7 @@ enemy::~enemy()
 {
 }
 
-HRESULT enemy::init(void)
+HRESULT enemy::init(float x, float y)
 {
 	gameNode::init();
 

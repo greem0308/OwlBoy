@@ -4,11 +4,6 @@
 #include "animation.h"
 #include <vector>
 
-enum PLAYERBULLET
-{
-	BULLET_SHOOT, BULLET_DIE, BULLET_NONE
-};
-
 struct tagBullet
 {
 	image* img;
@@ -19,11 +14,7 @@ struct tagBullet
 	float fireX, fireY;
 	float angle;
 	float count;
-	int currentX;
 	bool fire;
-	int BbulletState;
-	int BframeCount;
-	int BcurrentX;
 	animation* curAnimation;
 };
 
@@ -80,9 +71,6 @@ public:
 	virtual ~bulletM1(void);
 };
 
-
-
-
 #define ANICOUNT 3.0f
 
 //쏠때마다 만들고 삭제하는 미사일!
@@ -101,16 +89,14 @@ public:
 	virtual void update(void);
 	virtual void render(void);
 
-	virtual void fire(float x, float y, float angle,int Num);
+	virtual void fire(float x, float y, float angle, int Num,float speed);
 	virtual void move(void);
 	virtual void draw(void);
 	virtual void xMissile(int arrNum, int num, bool Check);
 
-	virtual void frameFunc();
-
 	void removeMissile(int arrNum);
 
-	vector<tagBullet> getVBullet(void) {return _vBullet;}
+	vector<tagBullet> getVBullet(void) { return _vBullet; }
 
 	missileM1(void);
 	virtual ~missileM1(void);

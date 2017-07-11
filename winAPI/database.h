@@ -9,9 +9,10 @@ class elements
 {
 public: // private을 퍼블릭으로 푼다음에.. 
 	const char* name;
-	float x;
-	float y;
-	int hp;
+	int currentHP;
+	int maxHP;
+	float speed;
+	float shootSpeed;
 	int coin;
 	//사운드
 	bool soundOpen;

@@ -21,8 +21,10 @@ HRESULT player::init(float x, float y)
 	invenInit();
 
 	//player____________________________________________________________________________________________
-
-	this->setHP(DATABASE->getElementData("player")->hp);
+	this->setCurrentHP(DATABASE->getElementData("player")->currentHP);
+	this->setMaxHP(DATABASE->getElementData("player")->maxHP);
+	this->setSpeed(DATABASE->getElementData("player")->speed);
+	this->setShootSpeed(DATABASE->getElementData("player")->shootSpeed);
 	this->setCoin(DATABASE->getElementData("player")->coin);
 	this->setsoundOpen(DATABASE->getElementData("player")->soundOpen);
 	this->setinventoryOpen(DATABASE->getElementData("player")->inventoryOpen);
@@ -35,19 +37,22 @@ HRESULT player::init(float x, float y)
 	//IMAGEMANAGER->addFrameImage("geddyR","player/geddyRight.bmp",100 *6 * 1.5 ,100 * 3 * 1.5,6,3,true,RGB(255,0,255));
 	//IMAGEMANAGER->addFrameImage("geddyL", "player/geddyLeft.bmp", 100 * 6 * 1.5, 100 * 3 * 1.5, 6, 3, true, RGB(255, 0, 255));
 	IMAGEMANAGER->addFrameImage("geddy", "player/geddy.bmp", 100 * 6 * 1.4, 100 * 8 * 1.4, 6, 8, true, RGB(255, 0, 255));
-
 	IMAGEMANAGER->addImage("hp", "UI/hp.bmp",85,17, true, RGB(255, 0, 255));
+	IMAGEMANAGER->addImage("maxHP", "UI/maxHP.bmp", 85, 17, true, RGB(255, 0, 255));
 	IMAGEMANAGER->addImage("hpBar", "UI/hpBar.bmp", 140, 50, true, RGB(255, 0, 255));
 
 	// player __________________________________________________________________________________________________________
 	_player.x = x;
 	_player.y = y;
+	
 	// database 에 해놓은걸 또 초기화하면 안되니까 주석처리해놨음. 
-	//_player.hp = 0;
+	//= 0;
 	//_player.coin = 0;
+	//_player.speed = 4;
+	
 	_player.rc = RectMakeCenter(_player.x,_player.y, _player.imgR->getFrameWidth()/3, _player.imgR->getFrameHeight()/3);
 	_player.angle = PI;
-	_player.speed = 4;
+
 	_player.gravity = 30.0f;
 	_player.groundgrv = 0; 
 	_player.jump = false;
@@ -70,7 +75,7 @@ HRESULT player::init(float x, float y)
 	_player.shootCurrentY = 0;
 
 	_player._fire = new missileM1;
-	_player._fire->init(10, 350);
+	_player._fire->init(10, 300);
 
 	// 총은 플레이어에서 쏘고, 게디 잡을때의 렉트가 필요해서 구조체를 생성하였음.
 	// geddy __________________________________________________________________________________________________________
@@ -98,6 +103,12 @@ HRESULT player::init(float x, float y)
 	geddy.groundgrv = 0;
 	geddy.showCurve = false; // 커브 보여줄때 구분 불.
 
+	_hpBar = new progressBar;
+	_hpBar->init(70,35);
+
+	miniX = 0;
+	miniY = 0; 
+
 return S_OK;
 }
 
@@ -112,9 +123,14 @@ void player::update(void)
 	_player._fire->update();
 	soundBtn->update();
 	inventoryBtn->update();
+	KEYANIMANAGER->update();
 
-	//ani->frameUpdate(TIMEMANAGER->getElapsedTime());
-
+	// 마우스 애니메이션을 위한 기능.
+	if(!geddy.follow) mouseGun = false;
+	if (geddy.follow) mouseGun = true;
+	if (!geddy.showCurve)GeddyThrow = false;
+	if (geddy.showCurve)GeddyThrow = true;
+	
 	// 총 위치.
 	geddy.gunX = geddy.x;
 	geddy.gunY = geddy.y;
@@ -136,11 +152,25 @@ void player::update(void)
 	CurveLineFunc(); // 던질때 커브 라인 그리는 함수
 	geddyCastFunc(); // 던지는 조건,키컨트롤.
 
-
 	//sound_inven_________________________________________________________________
 	soundUpdate();
 	invenUpdate();
 
+	if (_player.currentHP > _player.maxHP)
+	{
+		_player.currentHP = _player.maxHP;
+	}
+	
+	// 플레이어에 거꾸로 넣어준다. 그러면 쓰고, 읽기 다 되는셈. 
+	//플레이어를 상속받아서 동적할당한 모든 씬들에서
+	_player.currentHP = DATABASE->getElementData("player")->currentHP;
+	_player.maxHP = DATABASE->getElementData("player")->maxHP;
+	_player.speed = DATABASE->getElementData("player")->speed;
+	_player.shootSpeed = DATABASE->getElementData("player")->shootSpeed;
+	_player.coin = DATABASE->getElementData("player")->coin;
+
+	// hpBar 현재치, 최대치.
+	_hpBar->setGuage(_player.currentHP,_player.maxHP);
 }
 
 void player::render(void)
@@ -163,31 +193,53 @@ void player::render(void)
 
 	IMAGEMANAGER->findImage("armGun")->frameRender(getMemDC(), geddy.rc.left - 50, geddy.rc.top-40, geddy.gunFrameX, _player.shootCurrentY);
 
-	char str[128];
-	SetTextAlign(getMemDC(), TA_RIGHT);
-	SetBkMode(getMemDC(), TRANSPARENT);
-	SetTextColor(getMemDC(), RGB(20,10,200));
-	HFONT myFont = CreateFont(25, 0, 0, 0, 1, 0, 0, 0, HANGEUL_CHARSET, 3, 2, 1, VARIABLE_PITCH | FF_ROMAN, TEXT("나눔바른고딕"));
-	SelectObject(getMemDC(), myFont);
 
 	//hp
-	sprintf(str, "%d", _player.hp);
-	TextOut(getMemDC(), 50, 150, str, strlen(str));
+	IMAGEMANAGER->findImage("hpBar")->render(getMemDC(), 20, 20);
+	_hpBar->render();
+
+
+	char str[256];
+	SetTextAlign(getMemDC(), TA_LEFT);
+	SetBkMode(getMemDC(), TRANSPARENT);
+	SetTextColor(getMemDC(), RGB(255,255,255));
+	HFONT myFont = CreateFont(28, 0, 0, 0, 1, 0, 0, 0, HANGEUL_CHARSET, 3, 2, 1, VARIABLE_PITCH | FF_ROMAN, TEXT("System"));
+	HFONT hpFont = CreateFont(8, 0, 0, 0, 2, 0, 0, 0, HANGEUL_CHARSET, 3, 2, 1, VARIABLE_PITCH | FF_ROMAN, TEXT("System"));
+	SelectObject(getMemDC(), hpFont);
+
+	//currentHP
+	sprintf(str, "%d", _player.currentHP);
+	TextOut(getMemDC(), 70, 38, str, strlen(str));
+
+	//maxHp
+	sprintf(str, "%d", _player.maxHP);
+	TextOut(getMemDC(), 127, 38, str, strlen(str));
+
+	SelectObject(getMemDC(), myFont);
 
 	//coin
-	sprintf(str, "%d", _player.coin);
-	TextOut(getMemDC(), 100, 150, str, strlen(str));
+	SetTextColor(getMemDC(), RGB(150,150,150));
+	sprintf(str, "coin : %d", _player.coin);
+	TextOut(getMemDC(), 10, 150, str, strlen(str));
+
+	//shootArea
+	sprintf(str, "shootSpeed : %0.2f", _player.shootSpeed);
+	TextOut(getMemDC(), 10, 200, str, strlen(str));
+	
+	//speed
+	sprintf(str, "speed : %0.2f", _player.speed);
+	TextOut(getMemDC(), 10, 250, str, strlen(str));
 
 	//x,y
-	sprintf(str, "%0.2f", _player.x);
-	TextOut(getMemDC(), 100, 250, str, strlen(str));
-	sprintf(str, "%0.2f", _player.y);
-	TextOut(getMemDC(), 250, 250, str, strlen(str));
+	sprintf(str, "x: %0.2f", _player.x);
+	TextOut(getMemDC(), 10, 300, str, strlen(str));
+	sprintf(str, "y: %0.2f", _player.y);
+	TextOut(getMemDC(), 130, 300, str, strlen(str));
 
 	sprintf(str, "toVellieDoor %d", toVellieDoor);
-	TextOut(getMemDC(), 100, 350, str, strlen(str));
+	TextOut(getMemDC(), 10, 350, str, strlen(str));
 	sprintf(str, "startDoor %d", startDoor);
-	TextOut(getMemDC(), 250, 350, str, strlen(str));
+	TextOut(getMemDC(), 10, 400, str, strlen(str));
 
 
 	// 던질때 커브 원형들 그리기.
@@ -199,16 +251,23 @@ void player::render(void)
 		}
 	}
 	_player._fire->render();
-
-	//hp
-	IMAGEMANAGER->findImage("hpBar")->render(getMemDC(),20,20);
-	IMAGEMANAGER->findImage("hp")->render(getMemDC(),70,35);
+	
 	soundBtn->render();
 	inventoryBtn->render();
 
 	//sound____inven____________________________________________________________________
 	soundRender();
 	invenRender();
+
+	if (inventoryOpen)
+	{
+		//coin
+		sprintf(str, "%d", _player.coin);
+		TextOut(getMemDC(), 540, 280, str, strlen(str));
+	}
+
+	DeleteObject(myFont);
+	DeleteObject(hpFont);
 }
 
 void player::keyControl(void)
@@ -219,6 +278,7 @@ void player::keyControl(void)
 		_player.state = RUN;
 		_player.fall = false;
 		_player.x -= _player.speed;
+		miniX -= _player.speed;
 	}
 	if (KEYMANAGER->isOnceKeyUp(VK_LEFT)) _player.state = IDLE;
 
@@ -228,6 +288,7 @@ void player::keyControl(void)
 		_player.state = RUN;	
 		_player.fall = false;
 		_player.x += _player.speed;
+		miniX += _player.speed;
 	}
 	if (KEYMANAGER->isOnceKeyUp(VK_RIGHT)) _player.state = IDLE;
 
@@ -261,11 +322,13 @@ void player::keyControl(void)
 		if (KEYMANAGER->isStayKeyDown(VK_UP))
 		{
 			_player.y -= _player.speed;
+			miniY -= _player.speed;
 			_player.jump = false;
 		}
 		if (KEYMANAGER->isStayKeyDown(VK_DOWN))
 		{
 			_player.y += _player.speed;
+			miniY += _player.speed;
 			_player.jump = false;
 		}
 		if (!geddy.follow)
@@ -285,8 +348,16 @@ void player::keyControl(void)
 		{
 			_player.state = ROLL;
 			
-			if (_player.direction == RIGHT) _player.x += 5;
-			if (_player.direction == LEFT) _player.x -= 5;
+			if (_player.direction == RIGHT)
+			{
+				_player.x += 5;
+				miniX += 5;
+			}
+			if (_player.direction == LEFT)
+			{
+				_player.x -= 5;
+				miniX -= 5;
+			}
 		}
 	}
 
@@ -319,6 +390,7 @@ void player::PixelCollision(void)
 			{
 				_player.ground = true; // 땅이라고 알려줌. 
 				_player.y += _player.groundgrv; // 플레이어y += 땅 그래피티 
+				miniY += _player.groundgrv;
 
 				_player.groundgrv = 0;
 				_player.jumpCount = 0;
@@ -345,6 +417,8 @@ void player::PixelCollision(void)
 			if (GetPixel(getPixel(), i, _player.y + 50 / 2 + 5) == RGB(255, 0, 255) && _player.gravity <= 0)
 			{
 				_player.y += _player.gravity;
+				miniY += _player.gravity;
+
 				_player.jump = false;
 				_player.gravity = 20;
 
@@ -352,9 +426,7 @@ void player::PixelCollision(void)
 			}
 		}
 
-
 		// BLUE_pixel____________________________________________________________________________________________________
-
 		for (int i = _player.x - 50 / 2; i < _player.x + 50 / 2; ++i)
 		{
 			// 만약 플레이어 y값+크기/2 아래 픽셀이 정해진 색이고 && 땅이 아니면
@@ -412,6 +484,8 @@ void player::jump(void)
 	{
 		_player.gravity -= 2.0f;
 		_player.y -= _player.gravity;
+		miniY -= _player.gravity;
+
 		if (_player.gravity < -20) _player.gravity = -20;
 	}
 	//땅에있지도 않고 점프상태도 아니면, 떨어진다. 
@@ -423,6 +497,7 @@ void player::jump(void)
 		}
 		_player.groundgrv -= 1.4f;
 		_player.y -= _player.groundgrv;
+		miniY -= _player.groundgrv;
 		if (_player.groundgrv < -20) _player.groundgrv = -20;
 	}
 	if (_player.fall) _player.state = FALL;
@@ -633,14 +708,6 @@ void player::frameFunc(void)
 
 }
 
-void player::removeMissile(int arrNum)
-{
-	if (_player._fire)
-	{
-		_player._fire->removeMissile(arrNum);
-	}
-}
-
 
 void player::geddyFunc(void)
 {
@@ -661,7 +728,7 @@ void player::geddyFunc(void)
 
 		if (KEYMANAGER->isOnceKeyDown(MK_LBUTTON))
 		{
-			_player._fire->fire(geddy.x + cosf(_player.angle) * 35, geddy.y - sinf(_player.angle) * 35, _player.angle, geddy.gunFrameX);
+			_player._fire->fire(geddy.x + cosf(_player.angle) * 35, geddy.y - sinf(_player.angle) * 35, _player.angle, geddy.gunFrameX,_player.shootSpeed);
 			_player.shootState = SHOOT;
 			geddy.geddyState = gSHOOT;
 		}
@@ -914,9 +981,7 @@ void player::soundRender()
 {
 	if (soundOpen)
 	{
-		//_soundOpen = true;
-
-		IMAGEMANAGER->findImage("soundOption")->render(getMemDC());
+	   IMAGEMANAGER->findImage("soundOption")->render(getMemDC());
 	}
 }
 
@@ -936,7 +1001,32 @@ void player::invenInit()
 		PointMake(0, 0), cbInventoryBtn);
 
 	// 인벤토리 창
-	IMAGEMANAGER->addImage("inventoryOption", "UI/inventoryOption.bmp", WINSIZEX, WINSIZEY, true, RGB(255, 0, 255));
+	IMAGEMANAGER->addImage("inventoryOption", "UI/inventoryOption.bmp", 1280,720, true, RGB(255, 0, 255));
+	//아이템들
+	IMAGEMANAGER->addImage("item1", "UI/item1_shoot.bmp",50,48, true, RGB(255, 0, 255));
+	IMAGEMANAGER->addImage("item2", "UI/item2_hp.bmp",   50,48, true, RGB(255, 0, 255));
+	IMAGEMANAGER->addImage("item3", "UI/item3_speed.bmp",50,48, true, RGB(255, 0, 255));
+
+	//아이템 설명 글
+	IMAGEMANAGER->addImage("item1Text", "UI/inventoryItem1Text.bmp",WINSIZEX,WINSIZEY, true, RGB(255, 0, 255));
+	IMAGEMANAGER->addImage("item2Text", "UI/inventoryItem2Text.bmp", WINSIZEX, WINSIZEY, true, RGB(255, 0, 255));
+	IMAGEMANAGER->addImage("item3Text", "UI/inventoryItem3Text.bmp", WINSIZEX, WINSIZEY, true, RGB(255, 0, 255));
+
+	inven[0].wearRC = RectMake(365,375,50,50);
+	inven[0].notWearRC = RectMake(450,375,50,50);
+	inven[1].wearRC = RectMake(365, 455, 50, 50);
+	inven[1].notWearRC = RectMake(450, 455, 50, 50);
+	inven[2].wearRC = RectMake(365, 530, 50, 50);
+	inven[2].notWearRC = RectMake(450, 530, 50, 50);
+	
+	for (int i = 0; i < 3; i++)
+	{
+		inven[i].notWear = false;
+		inven[i].wear = false;
+		inven[i].item = false;
+	}
+
+	itemTextCount = 0;
 }
 
 void player::invenUpdate()
@@ -949,6 +1039,87 @@ void player::invenUpdate()
 		}
 	}
 	inventoryOpen = DATABASE->getElementData("player")->inventoryOpen;
+
+	//사격거리가 200보다 크다면, 
+	if (_player.shootSpeed >3.0f)
+	{
+		//인벤토리 미착용부분의 불이 트루된다. 
+		inven[0].item = true;
+		inven[0].wear = true;
+	}
+
+	if (_player.maxHP > 50)
+	{
+		inven[1].item = true;
+		inven[1].wear = true;
+	}
+	if (_player.speed > 3.0)
+	{
+		inven[2].item = true;
+		inven[2].wear = true;
+	}
+
+	//만약 입은쪽 렉트를 클릭하면, 안 입은걸로 되고, 플레이어값도 다시 바뀐다. 
+	for (int i = 0; i < 3; i++)
+	{
+		if (PtInRect(&inven[i].wearRC, _ptMouse) && inven[i].item == true)
+		{
+			if (KEYMANAGER->isOnceKeyDown(MK_LBUTTON))
+			{
+				if (i == 0)
+				{
+					inven[0].wear = false;
+					inven[0].notWear = true;
+					DATABASE->getElementData("player")->shootSpeed = 3.0f;
+					itemTextCount = 0;
+				}
+				if (i == 1)
+				{
+					inven[1].wear = false;
+					inven[1].notWear = true;
+					DATABASE->getElementData("player")->maxHP = 50;
+					itemTextCount = 1;
+				}
+				if (i == 2)
+				{
+					inven[2].wear = false;
+					inven[2].notWear = true;
+					DATABASE->getElementData("player")->speed = 3.0;
+					itemTextCount = 2;
+				}
+			}
+		}
+	}
+
+	//만약 안입은쪽 렉트를 클릭하면, 입은걸로 되고, 플레이어값도 다시 바뀐다. 
+	for (int i = 0; i < 3; i++)
+	{
+		if (PtInRect(&inven[i].notWearRC, _ptMouse) && inven[i].item == true)
+		{
+			if (KEYMANAGER->isOnceKeyDown(MK_LBUTTON))
+			{
+				if (i == 0)
+				{
+					inven[0].notWear = false;
+					inven[0].wear = true;
+					DATABASE->getElementData("player")->shootSpeed = 5.2f;
+
+				}
+				if (i == 1)
+				{
+					inven[1].notWear = false;
+					inven[1].wear = true;
+					DATABASE->getElementData("player")->maxHP = 100;
+				}
+				if (i == 2)
+				{
+					inven[2].notWear = false;
+					inven[2].wear = true;
+					DATABASE->getElementData("player")->speed = 5.0f;
+				}
+			}
+		}
+	}
 }
 
 void player::invenRender()
@@ -956,10 +1127,65 @@ void player::invenRender()
 	if (inventoryOpen)
 	{
 		IMAGEMANAGER->findImage("inventoryOption")->render(getMemDC());
-	}
+
+		//for (int i = 0; i < 3; i++)
+		//{
+		//	Rectangle(getMemDC(), inven[i].wearRC.left, inven[i].wearRC.top, inven[i].wearRC.right, inven[i].wearRC.bottom);
+		//	Rectangle(getMemDC(), inven[i].notWearRC.left, inven[i].notWearRC.top, inven[i].notWearRC.right, inven//[i].notWearRC.bottom);
+		//}
+				//샀고, 안입은불이 트루, 입은불이 펄스 이면, 
+		if (inven[0].item && inven[0].notWear && !inven[0].wear)
+		{
+			IMAGEMANAGER->findImage("item1")->render(getMemDC(), inven[0].notWearRC.left, inven[0].notWearRC.top);
+		}
+		if (inven[1].item && inven[1].notWear && !inven[1].wear)
+		{
+			IMAGEMANAGER->findImage("item2")->render(getMemDC(), inven[1].notWearRC.left, inven[1].notWearRC.top);
+		}
+		if (inven[2].item && inven[2].notWear && !inven[2].wear)
+		{
+			IMAGEMANAGER->findImage("item3")->render(getMemDC(), inven[2].notWearRC.left, inven[2].notWearRC.top);
+		}
+
+		if (inven[0].item && inven[0].wear && !inven[0].notWear)
+		{
+			IMAGEMANAGER->findImage("item1")->render(getMemDC(), inven[0].wearRC.left, inven[0].wearRC.top);
+		}
+		if (inven[1].item && inven[1].wear && !inven[1].notWear)
+		{
+			IMAGEMANAGER->findImage("item2")->render(getMemDC(), inven[1].wearRC.left, inven[1].wearRC.top);
+		}
+		if (inven[2].item && inven[2].wear && !inven[2].notWear)
+		{
+			IMAGEMANAGER->findImage("item3")->render(getMemDC(), inven[2].wearRC.left, inven[2].wearRC.top);
+		}
+
+		// 설명글 
+		if (itemTextCount == 0 && inven[0].item)
+		{
+			IMAGEMANAGER->findImage("item1Text")->render(getMemDC(), 0, 0);
+		}
+		if (itemTextCount == 1 && inven[1].item)
+		{
+			IMAGEMANAGER->findImage("item2Text")->render(getMemDC(), 0, 0);
+		}
+		if (itemTextCount == 2 && inven[2].item)
+		{
+			IMAGEMANAGER->findImage("item3Text")->render(getMemDC(), 0, 0);
+		}
+	}//inventoryOpen
 }
 
 void player::cbInventoryBtn()
 {
 	DATABASE->getElementData("player")->inventoryOpen = true;
+}
+
+
+void player::removeMissile(int arrNum)
+{
+	if (_player._fire)
+	{
+		_player._fire->removeMissile(arrNum);
+	}
 }

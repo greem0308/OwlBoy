@@ -3,11 +3,15 @@
 #include "animation.h"
 #include "bullets.h"
 #include "button.h"
+#include "progressBar.h"
 
 #define CURVE_CIRCLE_SIZE 30 // 커브 공 사이즈. 커브 사이간격도 조절함. 
 #define CURVE_CIRCLE_LINE 10 // 커브 공 몇개? 
 
 #define Door
+
+//로딩바 이미지 변경해준다
+//_loadingBar->setGuage(_current, _vLoadItem.size());
 
 enum DIRECTION
 {
@@ -36,13 +40,14 @@ enum GeddySTATE
 class player : public gameNode
 {
 public:
+	progressBar* _hpBar;
+
 	struct tagPlayer
 	{
 		image* imgR;
 		image* imgL;
 		RECT rc;
 		RECT heatRC;
-		bool ground;
 		bool jump;
 		bool fly;
 		bool fall;
@@ -50,12 +55,12 @@ public:
 		bool turn;
 		bool flyTurn;
 		int jumpCount;
-		int hp;
+		int currentHP;
+		int maxHP;
 		RECT HPbar;
 		int coin;
 		int frameCount;
 		int currentX;
-		float x, y, radius,angle, speed, gravity, groundgrv;
 		STATE state;
 		DIRECTION direction;
 		SHOOTSTATE shootState;
@@ -63,9 +68,17 @@ public:
 		int shootFrameCount;
 		int shootCurrentY;
 
+		float shootSpeed;
 		missileM1*  _fire;
+
+		//점프용
+		float x, y, radius,angle, speed, gravity, groundgrv;
+		bool ground;
 	};
 	tagPlayer _player;
+
+	//minimap용 플레이어 좌표
+	float miniX, miniY;
 
 	struct tagGeddy
 	{
@@ -103,12 +116,6 @@ public:
 		FLOAT y;
 	};
 	tagCurveLine curveLine[50];
-	
-	struct tagDoorPos
-	{
-
-	};
-	//tagDoorPos doorPos[];
 
 	// sound __________________________________________________________________________________________________________
 	button* soundBtn;
@@ -131,14 +138,26 @@ public:
 	virtual void invenUpdate();
 	virtual void invenRender();
 
+	struct tagInven
+	{
+		RECT wearRC;//착용
+		RECT notWearRC;
+		bool notWear;
+		bool wear;
+		bool item;
+	};
+	tagInven inven[3];
+	int itemTextCount;
+
 public:
 	virtual HRESULT init(float x, float y);
 	virtual void release(void);
 	virtual void update(void);
 	virtual void render(void);
 	virtual void keyControl(void);
+	virtual void frameFunc(void); 
+
 	virtual void jump(void);
-	virtual void frameFunc(void);
 	virtual void PixelCollision(void);
 
 	virtual void geddyFunc(void);
@@ -148,7 +167,10 @@ public:
 	virtual void CurveLineFunc(void); // 던질떄 궤적.
 
 	// database 의 변수값을 플레이어 변수로 셋한다.. 
-	void setHP(int hp) { _player.hp = hp; }
+	void setCurrentHP(int currentHP) { _player.currentHP = currentHP; } // currentHP
+	void setMaxHP(int maxHP) { _player.maxHP = maxHP; }
+	void setSpeed(float speed) { _player.speed = speed; }
+	void setShootSpeed(float shootSpeed) { _player.shootSpeed = shootSpeed; }
 	void setCoin(int coin) { _player.coin = coin; }
 	void setsoundOpen(bool soundOpen) { soundOpen = soundOpen; }
 	void setinventoryOpen(int inventoryOpen) { inventoryOpen = inventoryOpen; }

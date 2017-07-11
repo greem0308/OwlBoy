@@ -16,7 +16,9 @@ velliToDoorPos DoorPos[7];
 int toVellieDoor;
 int startDoor;
 int doorFrame;
-
+int itemCount;
+bool mouseGun;
+bool GeddyThrow;
 
 gameStudy _gs;
 

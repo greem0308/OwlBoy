@@ -25,9 +25,6 @@ HRESULT bullet::init(int bulletMax, float range)
 		bullet.img->init("bullet.bmp", 12, 12, true, RGB(255, 0, 255));
 		bullet.speed = 1.1f;
 		bullet.fire = false;
-		bullet.BcurrentX = 0;
-		bullet.BframeCount = 0;
-		bullet.BbulletState = BULLET_SHOOT;
 		_vBullet.push_back(bullet);
 	}
 
@@ -112,6 +109,7 @@ bulletM1::bulletM1(void)
 {
 }
 
+
 bulletM1::~bulletM1(void)
 {
 }
@@ -154,19 +152,19 @@ void bulletM1::fire(float x, float y, float angle,
 
 	tagBullet bullets;
 	ZeroMemory(&bullets, sizeof(tagBullet));
-	
-	bullets.img = IMAGEMANAGER->addFrameImage("bomb","bomb.bmp", 96*2, 16*2, 6, 1, true, RGB(255, 0, 255));
+
+	bullets.img = IMAGEMANAGER->addFrameImage("cannonBall", "Scene/event/CannonBall.bmp", 640*2, 656*2, 16, 16, true, RGB(255, 0, 255));
 	bullets.speed = speed;
 	bullets.angle = angle;
-	bullets.radius = bullets.img->getWidth() / 2;
+	bullets.radius = 30;
 	bullets.x = bullets.fireX = x;
 	bullets.y = bullets.fireY = y;
 	bullets.rc = RectMakeCenter(bullets.x, bullets.y,
-		bullets.img->getFrameWidth(), bullets.img->getFrameHeight());
+	60,60);
 
-	KEYANIMANAGER->addCoordinateFrameAnimation("bulletFire", "bomb", 0, 1, 15, false, true);
-	KEYANIMANAGER->addCoordinateFrameAnimation("bulletDie", "bomb", 4, 5, 30, false, true);
-	
+	KEYANIMANAGER->addCoordinateFrameAnimation("bulletFire", "cannonBall", 0, 3, 15, false, true);
+	KEYANIMANAGER->addCoordinateFrameAnimation("bulletDie", "cannonBall", 4, 20, 30, false, true);
+
 	bullets.curAnimation = KEYANIMANAGER->findAnimation("bulletFire");
 	bullets.curAnimation->start();
 	_vBullet.push_back(bullets);
@@ -177,22 +175,20 @@ void bulletM1::move(void)
 {
 	for (_viBullet = _vBullet.begin(); _viBullet != _vBullet.end();)
 	{
-		
 		_viBullet->x += cosf(_viBullet->angle) * _viBullet->speed;
 		_viBullet->y += -sinf(_viBullet->angle) * _viBullet->speed;
 
-		
-		_viBullet->rc = RectMakeCenter(_viBullet->x, _viBullet->y,
-		_viBullet->img->getWidth(), _viBullet->img->getFrameHeight());
+		_viBullet->rc = RectMakeCenter(_viBullet->x+30, _viBullet->y+30,
+			_viBullet->img->getFrameWidth()/1.5, _viBullet->img->getFrameHeight()/ 1.5);
 
 		//사거리 밖으로 나가면...
-		if (_range-30 < getDistance(_viBullet->fireX,
+		if (_range - 30 < getDistance(_viBullet->fireX,
 			_viBullet->fireY, _viBullet->x, _viBullet->y))
 		{
 			_viBullet->curAnimation = KEYANIMANAGER->findAnimation("bulletDie");
 			_viBullet->curAnimation->start();
 		}
-	
+
 		//사거리 밖으로 나가면...
 		if (_range < getDistance(_viBullet->fireX,
 			_viBullet->fireY, _viBullet->x, _viBullet->y))
@@ -208,6 +204,7 @@ void bulletM1::draw(void)
 	for (_viBullet = _vBullet.begin(); _viBullet != _vBullet.end(); ++_viBullet)
 	{
 		_viBullet->img->aniRender(getMemDC(), _viBullet->rc.left, _viBullet->rc.top, _viBullet->curAnimation);
+		//Rectangle(getMemDC(),_viBullet->rc.left, _viBullet->rc.top, _viBullet->rc.right, _viBullet->rc.bottom);
 	}
 }
 
@@ -253,7 +250,7 @@ void missileM1::release(void)
 void missileM1::update(void)
 {
 	gameNode::update();
-	frameFunc();
+
 	move();
 }
 
@@ -263,7 +260,7 @@ void missileM1::render(void)
 }
 
 //뽜이야~~~~!!
-void missileM1::fire(float x, float y,float angle,int Num)
+void missileM1::fire(float x, float y, float angle, int Num,float speed)
 {
 	//최대 발사 갯수 제한
 	if (_bulletMax <= _vBullet.size()) return;
@@ -271,25 +268,15 @@ void missileM1::fire(float x, float y,float angle,int Num)
 	tagBullet bullet;
 	ZeroMemory(&bullet, sizeof(tagBullet));
 
-	//bullet.img = new image;
-	bullet.img = IMAGEMANAGER->addFrameImage("bulletEffect", "player/bulletEffect.bmp", 1000/2,100/2, 10, 1, true, RGB(255, 0, 255));
-	//bullet.img->init("player/bulletEffect.bmp", 1000,100, 10, 1, true, RGB(255, 0, 255));
-	bullet.speed = 5.0f;
+	bullet.img = new image;
+	bullet.img->init("bullet.bmp", 64, 32, 2, 1, true, RGB(255, 0, 255));
+	bullet.speed = speed;
 	bullet.angle = angle;
-	bullet.x = bullet.fireX = x + cosf(bullet.angle)*30;
-	bullet.y = bullet.fireY = y - sinf(bullet.angle) * 30;
+	bullet.x = bullet.fireX = x + cosf(bullet.angle);
+	bullet.y = bullet.fireY = y - sinf(bullet.angle);
 	bullet.rc = RectMakeCenter(x, y, bullet.img->getFrameWidth(),
 		bullet.img->getFrameHeight());
-	//bullet.img->setFrameX(Num);
-
-	//KEYANIMANAGER->addCoordinateFrameAnimation("playerBulletFire", "bulletEffect", 0, 8, 5, false, true);
-	//KEYANIMANAGER->addCoordinateFrameAnimation("playerBulletDie", "bulletEffect", 2, 8, 3, false, true);
-	//
-	//bullet.curAnimation = KEYANIMANAGER->findAnimation("playerBulletDie");
-	//bullet.curAnimation->start();
-
-	bullet.BbulletState = BULLET_SHOOT;
-
+	bullet.img->setFrameX(Num);
 	_vBullet.push_back(bullet);
 }
 
@@ -299,21 +286,18 @@ void missileM1::move(void)
 	{
 		_viBullet->x += cosf(_viBullet->angle) * _viBullet->speed;
 		_viBullet->y += -sinf(_viBullet->angle) * _viBullet->speed;
-		_viBullet->rc = RectMakeCenter(_viBullet->x, _viBullet->y, 
+		_viBullet->rc = RectMakeCenter(_viBullet->x, _viBullet->y,
 			_viBullet->img->getFrameWidth(),
-		_viBullet->img->getFrameHeight());
+			_viBullet->img->getFrameHeight());
 
-		if (_range - 100 < getDistance(_viBullet->fireX, _viBullet->fireY, _viBullet->x, _viBullet->y))
+		if (_range - 10 < getDistance(_viBullet->fireX, _viBullet->fireY, _viBullet->x, _viBullet->y))
 		{
-			//_viBullet->curAnimation = KEYANIMANAGER->findAnimation("playerBulletDie");
-			//_viBullet->curAnimation->start();
-			//_viBullet->img->setFrameX(1);
-			_viBullet->BbulletState == BULLET_DIE;
+			_viBullet->img->setFrameX(1);
 		}
 
 		if (_range < getDistance(_viBullet->fireX, _viBullet->fireY, _viBullet->x, _viBullet->y))
 		{
-			//SAFE_DELETE(_viBullet->img);
+			SAFE_DELETE(_viBullet->img);
 			_viBullet = _vBullet.erase(_viBullet);
 		}
 		else ++_viBullet;
@@ -324,9 +308,8 @@ void missileM1::draw(void)
 {
 	for (_viBullet = _vBullet.begin(); _viBullet != _vBullet.end(); ++_viBullet)
 	{
-	_viBullet->img->frameRender(getMemDC(), _viBullet->rc.left, _viBullet->rc.top,
-			_viBullet->img->getFrameX(), _viBullet->currentX);
-	//	_viBullet->img->aniRender(getMemDC(), _viBullet->rc.left, _viBullet->rc.top, _viBullet->curAnimation);
+		_viBullet->img->frameRender(getMemDC(), _viBullet->rc.left, _viBullet->rc.top,
+			_viBullet->img->getFrameX(), 0);
 	}
 }
 
@@ -339,45 +322,4 @@ void missileM1::xMissile(int arrNum, int num, bool Check)
 {
 	if (Check)_vBullet[arrNum].x += num;
 	else _vBullet[arrNum].x -= num;
-}
-
-void missileM1::frameFunc()
-{
-	for (_viBullet = _vBullet.begin(); _viBullet != _vBullet.end(); ++_viBullet)
-	{
-		_viBullet->BframeCount++;
-
-		switch (_viBullet->BbulletState)
-		{
-		case BULLET_NONE:
-			break;
-
-		case BULLET_SHOOT:
-			if (_viBullet->BframeCount > 5)
-			{
-				_viBullet->BframeCount = 0;
-				_viBullet->BcurrentX++;
-				if (_viBullet->BcurrentX > 9)
-				{
-					_viBullet->BcurrentX = 8;
-				}
-			}
-			break;
-
-		case BULLET_DIE:
-			if (_viBullet->BframeCount > 5)
-			{
-				_viBullet->BframeCount = 0;
-				_viBullet->BcurrentX++;
-				if (_viBullet->BcurrentX > 9)
-				{
-					_viBullet->BcurrentX = 0;
-				}
-			}
-			break;
-
-		default:
-			break;
-		}
-	}
 }

@@ -18,6 +18,7 @@ HRESULT startScene::init(void)
 	IMAGEMANAGER->addFrameImage("startScene", "Scene/startScene.bmp",19200,720,15,1,true,RGB(255,0,255));
 	
 	IMAGEMANAGER->addFrameImage("startBtn", "UI/startBtn.bmp", 133*1.2,74*1.2, 1, 2,true,RGB(255,0,255));
+	IMAGEMANAGER->addImage("item1_shoot", "UI/item1_shoot.bmp", 42, 40, true, RGB(255, 0, 255));
 
 	frameCount = 0;
 	currentX = 0;
@@ -46,6 +47,7 @@ void startScene::update(void)
 void startScene::render(void)
 {
 	IMAGEMANAGER->findImage("startScene")->frameRender(getMemDC(),0,0,currentX,0);
+	
 	startBtn->render();
 }
 

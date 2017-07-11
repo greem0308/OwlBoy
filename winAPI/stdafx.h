@@ -98,4 +98,11 @@ extern int startDoor;
 // 시작 불을 트루시키기위해 있는 장치.. 
 extern int doorFrame;
 
+//아이템 카운트. 어느아이템을 살거냐. 
+extern int itemCount;
+
+// 마우스 게디잡을때 화살표 바뀌는 것 구현. 
+extern bool mouseGun;
+extern bool GeddyThrow;
+
 // TODO: 프로그램에 필요한 추가 헤더는 여기에서 참조합니다.
