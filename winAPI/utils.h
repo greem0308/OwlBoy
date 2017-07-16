@@ -9,7 +9,7 @@
 #define PI_4 float(PI / 4.0f)
 #define PI_8 float(PI / 8.0f)
 #define PI_16 float(PI / 16.0f)
-#define PI_32 float(PI / 32.0f) 
+#define PI_32 float(PI / 32.0f)
 #define PI_64 float(PI / 64.0f)
 #define PI_128 float(PI / 128.0f)
 #define PI_256 float(PI / 256.0f)
@@ -27,7 +27,7 @@ namespace MY_UTIL
 {
 	//거리 구한다
 	float getDistance(float startX, float startY, float endX, float endY);
-	
+
 	//시작점부터 끝 점까지의 각을 라디안으로 구한다
 	float getAngle(float startX, float startY, float endX, float endY);
 }

@@ -36,6 +36,8 @@ HRESULT fruit0::init(float x, float y)
 	castGravity = 0; // 점점 증가시킬 중력.
 	showCurve = false; // 커브 보여줄때 구분 불.
 
+	fruit0eat = false;
+	eatFrame = 0;
 	return S_OK;
 }
 
@@ -45,6 +47,8 @@ void fruit0::release(void)
 
 void fruit0::update(void)
 {
+	if (tem.life)
+	{
 	// 카메라때매 계속 그려줘야 됨. 
 	tem.rc = RectMakeCenter(tem.x, tem.y, tem.image->getFrameWidth(), tem.image->getFrameHeight());
 
@@ -53,68 +57,94 @@ void fruit0::update(void)
 	CurveLineFunc();
 
 	RECT tempRC;
-	if (IntersectRect(&tempRC,&otus->_player.rc,&tem.rc))
+	if (IntersectRect(&tempRC, &otus->_player.rc, &tem.rc))
 	{
 		if (KEYMANAGER->isOnceKeyDown('9'))
 		{
-		 follow = true;
+			follow = true;
+			otus->_player.state = FLYHOLD; // 들어는 오는데 바로 플레이어 상태에서 바꾸고 있어서...
 		}
 	}
-	//follow = true;
+
+	if (follow)
+	{
+		if (KEYMANAGER->isOnceKeyDown(MK_LBUTTON))
+		{
+			fruit0eat = true;
+			DATABASE->getElementData("player")->currentHP += 5;
+			//otus->_player.currentHP += 5; // 요건 적용이 안됨.
+		}
+	}
+	}//life
+
+	eat();    
 }
 
 void fruit0::render(void)
 {
-	// item rc
-	Rectangle(getMemDC(), tem.rc.left, tem.rc.top, tem.rc.right, tem.rc.bottom);
-	tem.image->frameRender(getMemDC(), tem.rc.left, tem.rc.top);
+	if (tem.life)
+	{
+		// item rc
+		Rectangle(getMemDC(), tem.rc.left, tem.rc.top, tem.rc.right, tem.rc.bottom);
+		tem.image->frameRender(getMemDC(), tem.rc.left, tem.rc.top); 
+
+		// 던질때 커브 원형들 그리기.
+		if (showCurve)
+		{
+			for (int i = 0; i < CURVE_CIRCLE_LINE; i++)
+			{
+				Ellipse(getMemDC(), curveLine[i].rc.left, curveLine[i].rc.top, curveLine[i].rc.right, curveLine[i].rc.bottom);
+			}
+		}
+	}//life
 }
 
 void fruit0::PixelCollision(void)
 {
-	if (follow)
-	{
-		//tem.state = FLYHOLD;
+		if (follow)
+		{
+			//tem.state = FLYHOLD;
 			tem.x = otus->_player.x;
-		tem.y = otus->_player.y+ 70;
-		tem.ground = false;
-	}
-	// mouse angle  
-	// 여기까지가 게디펑션.
-
-	//땅에있지도 않고 점프상태도 아니면, 떨어진다. 
-	if (!tem.ground && !follow)
-	{
-		//tem.geddyState = gFALL;
-		tem.groundgrv -= 1.4f;
-		tem.y -= tem.groundgrv;
-		if (tem.groundgrv < -20) tem.groundgrv = -20;
-	}
-
-	////geddy__________________________________________________________________________________________________
-	// i = x - 크기절반; i< x + 크기의 절반; i++
-	for (int i = tem.x - tem.image->getFrameWidth() / 2; i < tem.x + tem.image->getFrameWidth() / 2; ++i)
-	{
-		// 만약 플레이어 y값+크기/2 아래 픽셀이 정해진 색이고 && 땅이 아니면
-		if (GetPixel(getPixel(), i, tem.y + tem.image->getFrameWidth() / 2 + 5) == RGB(255, 0, 255) && !tem.ground)
-		{
-			tem.ground = true; // 땅이라고 알려줌. 
-			tem.y += tem.groundgrv; // 플레이어y += 땅 그래피티 
-			tem.groundgrv = 0;
-			//tem.geddyState = gIDLE;
+			tem.y = otus->_player.y + 70;
+			tem.ground = false;
 		}
-	}
-	//바텀 
-	for (int i = tem.x - tem.image->getFrameWidth() / 2; i < tem.x + tem.image->getFrameWidth() / 2; ++i)
-	{
-		if (GetPixel(getPixel(), i, tem.y + tem.image->getFrameWidth() / 2 + 3) == RGB(255, 0, 255) && tem.gravity <= 0)
+		// mouse angle  
+		// 여기까지가 게디펑션.
+
+		//땅에있지도 않고 점프상태도 아니면, 떨어진다. 
+		if (!tem.ground && !follow)
 		{
-			tem.y += tem.gravity;
-			tem.gravity = 20;
-			break;
+			//tem.geddyState = gFALL;
+			tem.groundgrv -= 1.4f;
+			tem.y -= tem.groundgrv;
+			if (tem.groundgrv < -20) tem.groundgrv = -20;
 		}
-	}
-}
+
+		////geddy__________________________________________________________________________________________________
+		// i = x - 크기절반; i< x + 크기의 절반; i++
+		for (int i = tem.x - tem.image->getFrameWidth() / 2; i < tem.x + tem.image->getFrameWidth() / 2; ++i)
+		{
+			// 만약 플레이어 y값+크기/2 아래 픽셀이 정해진 색이고 && 땅이 아니면
+			if (GetPixel(getPixel(), i, tem.y + tem.image->getFrameWidth() / 2 + 5) == RGB(255, 0, 255) && !tem.ground)
+			{
+				tem.ground = true; // 땅이라고 알려줌. 
+				tem.y += tem.groundgrv; // 플레이어y += 땅 그래피티 
+				tem.groundgrv = 0;
+				//tem.geddyState = gIDLE;
+			}
+		}
+		//바텀 
+		for (int i = tem.x - tem.image->getFrameWidth() / 2; i < tem.x + tem.image->getFrameWidth() / 2; ++i)
+		{
+			if (GetPixel(getPixel(), i, tem.y + tem.image->getFrameWidth() / 2 + 3) == RGB(255, 0, 255) && tem.gravity <= 0)
+			{
+				tem.y += tem.gravity;
+				tem.gravity = 20;
+				break;
+			}
+		}
+
+}//func
 
 
 void fruit0::CastFunc()
@@ -122,13 +152,15 @@ void fruit0::CastFunc()
 	if (follow)
 	{
 		if (KEYMANAGER->isOnceKeyUp(MK_RBUTTON))
-		{
+		{		
 			cast = true;
 			showCurve = false;
 			follow = false;
 			castGravity = 0;
+			otus->_player.state = FLYIDLE;
 		}
 	}
+
 	if (cast)
 	{
 		castGravity += 0.5f;
@@ -180,5 +212,153 @@ void fruit0::CurveLineFunc()
 				curveLine[j].rc = RectMakeCenter(curveLine[j].x, curveLine[j].y, CURVE_CIRCLE_SIZE / 3, CURVE_CIRCLE_SIZE / 3);
 			}
 		}// Rbutton
+	}
+}
+
+// 먹을때 과일 위로 올리는 프레임.
+void fruit0::eat()
+{
+	if (fruit0eat)
+	{
+		otus->_player.state = FLYEAT;
+	
+		//DATABASE->getElementData
+		eatFrame++;
+		if (otus->_player.direction == RIGHT)
+		{
+			if (eatFrame > 4)
+			{
+				tem.y -= 5.5f;
+				tem.x += 5.5f;
+			}
+			if (eatFrame > 8)
+			{
+				tem.y -= 5.5f;
+				tem.x += 5.5f;
+			}
+			if (eatFrame > 12)
+			{
+				tem.y -= 5.5f;
+				tem.x += 5.5f;
+			}
+			if (eatFrame > 15)
+			{
+				tem.y -= 5.5f;
+				tem.x += 5.5f;
+			}
+			if (eatFrame > 18)
+			{
+				tem.y -= 5.5f;
+				tem.x += 5.5f;
+			}
+			if (eatFrame > 21)
+			{
+				tem.y -= 5.5f;
+				tem.x += 5.5f;
+			}
+			if (eatFrame > 24)
+			{
+				tem.y -= 5.5f;
+				tem.x += 5.5f;
+			}
+			if (eatFrame > 28)
+			{
+				tem.y -= 6.5f;
+				tem.x += 5.5f;
+			}
+			if (eatFrame > 32)
+			{
+				tem.y -= 7.5f;
+				tem.x += 5.5f;
+			}
+			if (eatFrame > 36)
+			{
+				tem.y -= 8.5f;
+			}
+			if (eatFrame > 40)
+			{
+				tem.y -= 10.5f;
+			}
+			if (eatFrame > 44)
+			{
+				tem.y -= 10.5f;
+				tem.x -= 5.5f;
+			}
+			if (eatFrame > 47)
+			{
+				fruit0eat = false;
+				tem.life = false;
+				eatFrame = 0;
+			}
+		}
+
+
+		else if (otus->_player.direction == LEFT)
+		{
+			if (eatFrame > 4)
+			{
+				tem.y -= 5.5f;
+				tem.x -= 5.5f;
+			}
+			if (eatFrame > 8)
+			{
+				tem.y -= 5.5f;
+				tem.x -= 5.5f;
+			}
+			if (eatFrame > 12)
+			{
+				tem.y -= 5.5f;
+				tem.x -= 5.5f;
+			}
+			if (eatFrame > 15)
+			{
+				tem.y -= 5.5f;
+				tem.x -= 5.5f;
+			}
+			if (eatFrame > 18)
+			{
+				tem.y -= 5.5f;
+				tem.x -= 5.5f;
+			}
+			if (eatFrame > 21)
+			{
+				tem.y -= 5.5f;
+				tem.x -= 5.5f;
+			}
+			if (eatFrame > 24)
+			{
+				tem.y -= 5.5f;
+				tem.x -= 5.5f;
+			}
+			if (eatFrame > 28)
+			{
+				tem.y -= 6.5f;
+				tem.x -= 5.5f;
+			}
+			if (eatFrame > 32)
+			{
+				tem.y -= 7.5f;
+				tem.x -= 5.5f;
+			}
+			if (eatFrame > 36)
+			{
+				tem.y -= 8.5f;
+			}
+			if (eatFrame > 40)
+			{
+				tem.y -= 10.5f;
+			}
+			if (eatFrame > 44)
+			{
+				tem.y -= 10.5f;
+				tem.x += 5.5f;
+			}
+			if (eatFrame > 47)
+			{
+				fruit0eat = false;
+				tem.life = false;
+				eatFrame = 0;
+			}
+		}
 	}
 }

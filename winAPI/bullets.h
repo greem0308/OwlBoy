@@ -42,6 +42,7 @@ public:
 	virtual ~bullet(void);
 };
 
+// enemyShip
 //공용으로 쓰는 총알 (쏠때마다 만들고 삭제한다)
 class bulletM1 : public gameNode
 {
@@ -70,6 +71,38 @@ public:
 	bulletM1(void);
 	virtual ~bulletM1(void);
 };
+
+// shooter
+//공용으로 쓰는 총알 (쏠때마다 만들고 삭제한다)
+class bulletM2 : public gameNode
+{
+private:
+	vector<tagBullet> _vBullet;
+	vector<tagBullet>::iterator _viBullet;
+
+	const char* _imageName;
+	float _range;
+	int _bulletMax;
+
+public:
+	virtual HRESULT init(int bulletMax, float range);
+	virtual void release(void);
+	virtual void update(void);
+	virtual void render(void);
+
+	virtual void fire(float x, float y, float angle,
+		float speed);
+	virtual void move(void);
+	virtual void draw(void);
+
+	void removeBullet(int arrNum);
+	vector<tagBullet> getVBullet(void) { return _vBullet; }
+
+	bulletM2(void);
+	virtual ~bulletM2(void);
+};
+
+
 
 #define ANICOUNT 3.0f
 

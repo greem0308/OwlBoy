@@ -9,7 +9,8 @@ public:
 	player* _player;
 	itemManager* _im;
 
-	//카메라에 연동시켜야하므로 x,y,가 필요함.
+	// 마을에서 문 위치. 
+	//카메라에 연동시켜야하므로 x,y,가 필요함. 
 	struct structDoor
 	{
 		// 0.마을,1.오투스집. 2.상점. 3.랩, 4.붐버맨, 5. 이벤트브릿지, 6.던전
@@ -44,6 +45,10 @@ public:
 
 	int cameraX;
 	int cameraY;
+
+	// 미니맵 포인트 
+	int minimapFrameCout;
+	int minimapCurrentX;
 
 	virtual HRESULT init(void);
 	virtual void release(void);

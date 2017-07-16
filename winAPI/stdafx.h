@@ -35,6 +35,7 @@
 #include "sceneManager.h"
 #include "database.h"
 #include "utils.h"
+#include "collision.h"
 #include "frameAnimationManager.h"
 #include "soundManager.h"
 #include "keyAnimationManager.h"
@@ -104,5 +105,9 @@ extern int itemCount;
 // 마우스 게디잡을때 화살표 바뀌는 것 구현. 
 extern bool mouseGun;
 extern bool GeddyThrow;
+
+// 이벤트에서 다시 마을 왔을때 던전 표시 
+extern bool goDungeon;
+
 
 // TODO: 프로그램에 필요한 추가 헤더는 여기에서 참조합니다.

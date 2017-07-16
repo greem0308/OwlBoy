@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "player.h"
 
-
 player::player()
 {
 }
@@ -75,7 +74,7 @@ HRESULT player::init(float x, float y)
 	_player.shootCurrentY = 0;
 
 	_player._fire = new missileM1;
-	_player._fire->init(10, 300);
+	_player._fire->init(10, 500);
 
 	// 총은 플레이어에서 쏘고, 게디 잡을때의 렉트가 필요해서 구조체를 생성하였음.
 	// geddy __________________________________________________________________________________________________________
@@ -200,6 +199,7 @@ void player::render(void)
 
 
 	char str[256];
+
 	SetTextAlign(getMemDC(), TA_LEFT);
 	SetBkMode(getMemDC(), TRANSPARENT);
 	SetTextColor(getMemDC(), RGB(255,255,255));
@@ -272,91 +272,150 @@ void player::render(void)
 
 void player::keyControl(void)
 {
-	if (KEYMANAGER->isStayKeyDown(VK_LEFT))
+	// 땅에서 걸을때, ////////////////////////////////////////////////////////////////////////////////
+	if (!_player.fly)
 	{
-		_player.direction = LEFT;
-		_player.state = RUN;
-		_player.fall = false;
-		_player.x -= _player.speed;
-		miniX -= _player.speed;
-	}
-	if (KEYMANAGER->isOnceKeyUp(VK_LEFT)) _player.state = IDLE;
-
-	if (KEYMANAGER->isStayKeyDown(VK_RIGHT))
-	{
-		_player.direction = RIGHT;
-		_player.state = RUN;	
-		_player.fall = false;
-		_player.x += _player.speed;
-		miniX += _player.speed;
-	}
-	if (KEYMANAGER->isOnceKeyUp(VK_RIGHT)) _player.state = IDLE;
-
-	if (KEYMANAGER->isOnceKeyDown(VK_UP))
-	{
-		_player.jump = true;
-		_player.state = JUMP;
-		_player.jumpCount++;
-		if (_player.jumpCount <= 1)
+		if (KEYMANAGER->isStayKeyDown(VK_LEFT))
 		{
-			_player.gravity = 30.0f;
-		}
-		else if (_player.jumpCount >= 2)
-		{
-			_player.fly = true;
-			_player.jump = false;
-		}
-		if (_player.fall == true)
-		{
-			_player.fly = true;
-			_player.jump = false;
+			_player.direction = LEFT;
+			_player.state = RUN;
 			_player.fall = false;
+			_player.x -= _player.speed;
+			miniX -= _player.speed;
 		}
-	}
+		if (KEYMANAGER->isOnceKeyUp(VK_LEFT)) _player.state = IDLE;
 
-	// 날고 있을때,
+		if (KEYMANAGER->isStayKeyDown(VK_RIGHT))
+		{
+			_player.direction = RIGHT;
+			_player.state = RUN;
+			_player.fall = false;
+			_player.x += _player.speed;
+			miniX += _player.speed;
+		}
+		if (KEYMANAGER->isOnceKeyUp(VK_RIGHT)) _player.state = IDLE;
+
+		if (KEYMANAGER->isOnceKeyDown(VK_UP))
+		{
+			_player.jump = true;
+			_player.state = JUMP;
+			_player.jumpCount++;
+			if (_player.jumpCount <= 1)
+			{
+				_player.gravity = 30.0f;
+			}
+			else if (_player.jumpCount >= 2)
+			{
+				_player.fly = true;
+				_player.state = FLYIDLE;
+				_player.jump = false;
+			}
+			if (_player.fall == true)
+			{
+				_player.fly = true;
+				_player.jump = false;
+				_player.fall = false;
+			}
+		}
+	} // !fly
+
+	// 나는 기본상태 일때 ////////////////////////////////////////////////////////////////////////////////
 	if (_player.fly)
 	{
-		_player.state = FLYIDLE;
-		_player.ground = true;
-		if (KEYMANAGER->isStayKeyDown(VK_UP))
+		if (_player.state != FLYHOLD)
 		{
-			_player.y -= _player.speed;
-			miniY -= _player.speed;
-			_player.jump = false;
-		}
-		if (KEYMANAGER->isStayKeyDown(VK_DOWN))
-		{
-			_player.y += _player.speed;
-			miniY += _player.speed;
-			_player.jump = false;
-		}
-		if (!geddy.follow)
-		{
-			if (KEYMANAGER->isOnceKeyDown(MK_RBUTTON) || KEYMANAGER->isOnceKeyDown('E'))
+			_player.ground = true;
+			if (KEYMANAGER->isStayKeyDown(VK_UP))
 			{
-				_player.fall = true;
-				_player.jump = true;
+				_player.y -= _player.speed;
+				miniY -= _player.speed;
+				_player.jump = false;
+			}
+			if (KEYMANAGER->isStayKeyDown(VK_DOWN))
+			{
+				_player.y += _player.speed;
+				miniY += _player.speed;
+				_player.jump = false;
+			}
+
+			if (KEYMANAGER->isStayKeyDown(VK_LEFT))
+			{
+				_player.direction = LEFT;	
+				_player.fall = false;
+				_player.x -= _player.speed;
+				miniX -= _player.speed;
+			}
+			if (KEYMANAGER->isOnceKeyUp(VK_LEFT)) _player.state = FLYIDLE;
+
+			if (KEYMANAGER->isStayKeyDown(VK_RIGHT))
+			{
+				_player.direction = RIGHT;
+				_player.fall = false;
+				_player.x += _player.speed;
+				miniX += _player.speed;
+			}
+			if (KEYMANAGER->isOnceKeyUp(VK_RIGHT)) _player.state = FLYIDLE;
+
+			if (!geddy.follow)
+			{
+				if (KEYMANAGER->isOnceKeyDown(MK_RBUTTON))
+				{
+					_player.fall = true;
+					_player.jump = true;
+				}
+			}
+
+			if (KEYMANAGER->isStayKeyDown(VK_SPACE))
+			{
+				_player.state = TURN;
+			}
+
+			if (KEYMANAGER->isStayKeyDown('R'))
+			{
+				_player.state = ROLL;
+
+				if (_player.direction == RIGHT)
+				{
+					_player.x += 5;
+					miniX += 5;
+				}
+				if (_player.direction == LEFT)
+				{
+					_player.x -= 5;
+					miniX -= 5;
+				}
 			}
 		}
 
-		if (KEYMANAGER->isStayKeyDown(VK_SPACE))
+		// 뭘 들고 있을때 ////////////////////////////////////////////////////////////////////////////////
+		else if (_player.state == FLYHOLD)
 		{
-			_player.state = TURN;
-		}
-		if (KEYMANAGER->isStayKeyDown('R'))
-		{
-			_player.state = ROLL;
-			
-			if (_player.direction == RIGHT)
+			_player.ground = true;
+			if (KEYMANAGER->isStayKeyDown(VK_UP))
 			{
-				_player.x += 5;
-				miniX += 5;
+				_player.y -= _player.speed;
+				miniY -= _player.speed;
+				_player.jump = false;
 			}
-			if (_player.direction == LEFT)
+			if (KEYMANAGER->isStayKeyDown(VK_DOWN))
 			{
-				_player.x -= 5;
-				miniX -= 5;
+				_player.y += _player.speed;
+				miniY += _player.speed;
+				_player.jump = false;
+			}
+			if (KEYMANAGER->isStayKeyDown(VK_LEFT))
+			{
+				_player.direction = LEFT;
+				_player.fall = false;
+				_player.x -= _player.speed;
+				miniX -= _player.speed;
+			}
+			if (KEYMANAGER->isStayKeyDown(VK_RIGHT))
+			{
+				_player.direction = RIGHT;
+				_player.fall = false;
+				_player.x += _player.speed;
+				miniX += _player.speed;
 			}
 		}
 	}
@@ -370,6 +429,25 @@ void player::keyControl(void)
 	{
 		geddy.follow = false;
 	}
+
+	if (geddy.follow)
+	{
+		if (KEYMANAGER->isOnceKeyDown(MK_LBUTTON))
+		{
+			_player._fire->fire(geddy.x + cosf(_player.angle) * 35, geddy.y - sinf(_player.angle) * 35, _player.angle, geddy.gunFrameX, _player.shootSpeed);
+			_player.shootState = SHOOT;
+			geddy.geddyState = gSHOOT;
+		}
+		if (KEYMANAGER->isOnceKeyUp(MK_RBUTTON))
+		{
+			geddy.cast = true;
+			geddy.showCurve = false;
+			geddy.follow = false;
+			geddy.castGravity = 0;
+			_player.state = FLYIDLE;
+		}
+	}
+
 }
 
 void player::PixelCollision(void)
@@ -726,13 +804,6 @@ void player::geddyFunc(void)
 		if (_player.angle >= PI * 2) _player.angle -= PI * 2;
 		geddy.gunFrameX = int(_player.angle / PI_8); // 총 이미지 프레임. 
 
-		if (KEYMANAGER->isOnceKeyDown(MK_LBUTTON))
-		{
-			_player._fire->fire(geddy.x + cosf(_player.angle) * 35, geddy.y - sinf(_player.angle) * 35, _player.angle, geddy.gunFrameX,_player.shootSpeed);
-			_player.shootState = SHOOT;
-			geddy.geddyState = gSHOOT;
-		}
-
 
 		// 총든 팔 프레임Y 
 		if (_player.shootState == SHOOT)
@@ -862,16 +933,7 @@ void player::geddyFrameFunc(void)
 
 void player::geddyCastFunc()
 {
-	if (geddy.follow)
-	{
-		if (KEYMANAGER->isOnceKeyUp(MK_RBUTTON))
-		{
-			geddy.cast = true;
-			geddy.showCurve = false;
-			geddy.follow = false;
-			geddy.castGravity = 0;
-		}
-	}
+
 	if (geddy.cast)
 	{
 		geddy.castGravity += 0.5f;

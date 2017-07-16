@@ -14,9 +14,17 @@ labScene::~labScene()
 HRESULT labScene::init(void)
 {
 	gameNode::init();
-	IMAGEMANAGER->addImage("labBG", "Scene/lab/labBG.bmp", 1280, 720, true, RGB(255, 0, 255));
+	IMAGEMANAGER->addImage("labBG", "Scene/lab/labBG.bmp", 1280*1.2, 720 * 1.2, true, RGB(255, 0, 255));
 
-	backgroundPink = IMAGEMANAGER->addImage("labPixelPink", "Scene/lab/labPixelPink.bmp", 1280, 720, false);
+	backgroundPink = IMAGEMANAGER->addImage("labPixelPink", "Scene/lab/labPixelPink.bmp", 1280 * 1.2, 720 * 1.2, false);
+
+	IMAGEMANAGER->addFrameImage("lab_object2", "Scene/lab/lab_object2.bmp", 1416* 2,90 * 2, 24, 1, true, RGB(255, 0, 255));
+	IMAGEMANAGER->addFrameImage("lab_object4", "Scene/lab/lab_object4.bmp", 280 * 2,38 * 2, 8, 1, true, RGB(255, 0, 255));
+	IMAGEMANAGER->addFrameImage("lab_object5", "Scene/lab/lab_object5.bmp", 480* 2,67 * 2, 8, 1, true, RGB(255, 0, 255));
+	IMAGEMANAGER->addFrameImage("lab_object6", "Scene/lab/lab_object6.bmp", 376 * 2, 41 * 2, 8, 1, true, RGB(255, 0, 255));
+	IMAGEMANAGER->addFrameImage("lab_object7", "Scene/lab/lab_object7.bmp", 3731 * 2, 65 * 2,41, 1, true, RGB(255, 0, 255));
+
+	IMAGEMANAGER->addFrameImage("Professor", "Scene/lab/Professor.bmp", 512*2,64*2, 8, 1, true, RGB(255, 0, 255));
 
 	_player = new player;
 	_player->init(400, 200);
@@ -25,7 +33,19 @@ HRESULT labScene::init(void)
 	CurrentX = 0;
 
 	// 연구실 문
-	rc = RectMake(416, 311, 50, 90);
+	rc = RectMake(390, 310, 50, 100);
+
+	frameCount2 = 0;
+	CurrentX2= 0;
+	frameCount4 = 0;
+	CurrentX4 = 0;
+	frameCount5 = 0;
+	CurrentX5 = 0;
+	frameCount6 = 0;
+	CurrentX6 = 0;
+
+	frameCount7 = 0;
+	CurrentX7 = 0;
 
 	return S_OK;
 }
@@ -52,6 +72,9 @@ void labScene::update(void)
 			SCENEMANAGER->changeScene("VellieScene");
 		}
 	}
+
+	frameFunc();
+
 }
 
 void labScene::render(void)
@@ -59,11 +82,79 @@ void labScene::render(void)
 	IMAGEMANAGER->findImage("mapImage")->render(getPixel()); // 뒤에 픽셀배경들 안되게끔.
 	IMAGEMANAGER->findImage("mapImage")->render(getMemDC()); 
 	
-	IMAGEMANAGER->findImage("labPixelPink")->render(getPixel()); // 분홍.
+	IMAGEMANAGER->findImage("labPixelPink")->render(getPixel(), -120, -65); // 분홍.
 
-	IMAGEMANAGER->findImage("labBG")->render(getMemDC(), 0, 0); // 배경. 
+	IMAGEMANAGER->findImage("labBG")->render(getMemDC(), -120, -65); // 배경. 
+
+	// 자잘한 것들
+	IMAGEMANAGER->findImage("lab_object2")->frameRender(getMemDC(), 730, 235, CurrentX2, 0);
+	IMAGEMANAGER->findImage("lab_object4")->frameRender(getMemDC(), 585, 315, CurrentX4, 0);
+	IMAGEMANAGER->findImage("lab_object5")->frameRender(getMemDC(), 520, 430, CurrentX5, 0);
+	IMAGEMANAGER->findImage("lab_object6")->frameRender(getMemDC(), 635, 523, CurrentX6, 0);
+	IMAGEMANAGER->findImage("lab_object7")->frameRender(getMemDC(),550,190, CurrentX7,0);
+
+	IMAGEMANAGER->findImage("Professor")->frameRender(getMemDC(), 320, 128, CurrentX5, 0);
 
 	_player->render();
 
 	Rectangle(getMemDC(), rc.left, rc.top, rc.right, rc.bottom);
+}
+
+void labScene::frameFunc(void)
+{
+
+	frameCount2++;
+	if (frameCount2 > 10)
+	{
+		frameCount2 = 0;
+		CurrentX2++;
+		if (CurrentX2 > 23)
+		{
+			CurrentX2 = 0;
+		}
+	}
+
+
+	frameCount4++;
+	if (frameCount4 > 10)
+	{
+		frameCount4 = 0;
+		CurrentX4++;
+		if (CurrentX4 > 7)
+		{
+			CurrentX4 = 0;
+		}
+	}
+	frameCount5++;
+	if (frameCount5 > 10)
+	{
+		frameCount5 = 0;
+		CurrentX5++;
+		if (CurrentX5 > 7)
+		{
+			CurrentX5 = 0;
+		}
+	}
+
+	frameCount6++;
+	if (frameCount6 > 10)
+	{
+		frameCount6 = 0;
+		CurrentX6++;
+		if (CurrentX6 > 7)
+		{
+			CurrentX6 = 0;
+		}
+	}
+
+	frameCount7++;
+	if (frameCount7 > 16)
+	{
+		frameCount7 = 0;
+		CurrentX7++;
+		if (CurrentX7 > 40)
+		{
+			CurrentX7 = 0;
+		}
+	}
 }

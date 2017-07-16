@@ -29,9 +29,12 @@ HRESULT gameStudy::init(void)
 	SCENEMANAGER->addScene("bombamanScene", new bombamanScene);
 	SCENEMANAGER->addScene("eventBridgeScene", new eventBridgeScene);
 	SCENEMANAGER->addScene("eventScene", new eventScene);
+	SCENEMANAGER->addScene("dungeonScene", new dungeonScene);
+	SCENEMANAGER->addScene("BossScene", new BossScene);
+	SCENEMANAGER->addScene("collisionTestScene", new collisionTestScene);
 
 	//현재 씬을 _sceneOne으로 설정
-	SCENEMANAGER->changeScene("VellieScene");
+	SCENEMANAGER->changeScene("dungeonScene");
 
 	//_velli = new VellieScene;
 	//_velli->init();
@@ -39,7 +42,7 @@ HRESULT gameStudy::init(void)
 	arrowFrameCount = 0;
 	arrowCurrentX=0;
 	arrowCurrentY = 0;
-	arrowState=arrowIDLE;
+	arrowState = arrowIDLE;
 	mouseGun = false;
 	GeddyThrow = false;
 

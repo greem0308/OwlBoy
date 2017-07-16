@@ -65,6 +65,10 @@ HRESULT VellieScene::init(void)
 	_im = new itemManager;
 	_im->init();
 	_im->setPlayer(_player);
+
+	minimapFrameCout = 0;
+	minimapCurrentX = 0;
+
 	return S_OK;
 }
 
@@ -96,6 +100,18 @@ void VellieScene::update(void)
 	Delete();
 
 	minimapUpdate();
+
+	// minimap 카운트
+	minimapFrameCout++;
+	if (minimapFrameCout > 6)
+	{
+		minimapFrameCout = 0;
+		minimapCurrentX++;
+		if (minimapCurrentX > 8)
+		{
+			minimapCurrentX = 0;
+		}
+	}
 }
 
 void VellieScene::render(void)
@@ -127,6 +143,11 @@ void VellieScene::render(void)
 	// minimap Render
 	IMAGEMANAGER->findImage("miniMap")->render(getMemDC(),0,0);
 	IMAGEMANAGER->findImage("minimapBG")->render(getMemDC(), 1060,500);
+
+	if (goDungeon) // 만약 이벤트씬에서 마을로 다시 왔다면 던전위치가 표시됨. 
+	{
+		IMAGEMANAGER->findImage("minimapPoint")->frameRender(getMemDC(), 1055, 600, minimapCurrentX, 0);
+	}
 
 	HBRUSH miniBrush = CreateSolidBrush(RGB(150,190,250));
 	HPEN miniPen = CreatePen(PS_SOLID, 2, RGB(255,255, 255));
@@ -254,6 +275,8 @@ void VellieScene::doorPosFunc()
 	{
 		_player->_player.x = DoorPos[toVellieDoor].x;
 		_player->_player.y = DoorPos[toVellieDoor].y;
+		_player->miniX = DoorPos[toVellieDoor].x;
+		_player->miniY = DoorPos[toVellieDoor].y;
 		startDoor = 1;
 	}
 
@@ -298,7 +321,7 @@ void VellieScene::doorPosFunc()
 				{
 					toVellieDoor = 0;
 					startDoor = 0;
-					SCENEMANAGER->changeScene("otusHouseScene");
+					SCENEMANAGER->changeScene("dungeonScene");
 				}
 			}
 		}
@@ -313,6 +336,7 @@ void VellieScene::doorPosFunc()
 
 void VellieScene::doorPosInit()
 {
+	// 문 위치. 
 	// 0.마을,1.오투스집. 2.상점. 3.랩, 4.붐버맨, 5. 이벤트브릿지, 6.던전
 	door[0].x = -300;
 	door[0].y = -300;
@@ -329,6 +353,7 @@ void VellieScene::doorPosInit()
 	door[6].x = 341;
 	door[6].y = 2612;
 
+	// 다른씬에서 마을로 넘어올때 받는 선택하는 좌표값.
 	// 0.마을,1.오투스집. 2.상점. 3.랩, 4.붐버맨, 5. 이벤트브릿지, 6.던전
 	DoorPos[0].x = 2200;
 	DoorPos[0].y = 1645;
@@ -381,7 +406,19 @@ void VellieScene::Create(int Num)
 	if (itemShowFrame == 1)
 	{
 		_im->setFruit0(100,100);
+		_im->setFruit0(20, 100);
+		_im->setFruit0(50, 100);
 		_im->setFruit0(300, 10);
+		_im->setFruit0(10, 100);
+		_im->setFruit0(200, 500);
+		_im->setFruit0(1000, 2000);
+		_im->setFruit0(3000, 2000);
+		_im->setFruit0(30, 200);
+		_im->setFruit0(50, 300);
+		_im->setFruit0(300, 100);
+		_im->setFruit0(400, 100);
+		_im->setFruit0(440, 150);
+
 	}
 }
 
@@ -391,6 +428,6 @@ void VellieScene::Delete(void)
 {
 	for (int i = 0; i < _im->getItem().size(); ++i)
 	{
-		if (_im->getItem()[i]->tem.x <300) _im->removeItem(i);
+		//if (_im->getItem()[i]->tem.x <300) _im->removeItem(i);
 	}
 }

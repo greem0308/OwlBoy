@@ -10,6 +10,9 @@
 #include "bombamanScene.h"
 #include "eventBridgeScene.h"
 #include "eventScene.h"
+#include "dungeonScene.h"
+#include "BossScene.h"
+#include "collisionTestScene.h"
 
 enum
 {

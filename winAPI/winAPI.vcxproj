@@ -84,6 +84,8 @@
     <ClInclude Include="BossScene.h" />
     <ClInclude Include="bullets.h" />
     <ClInclude Include="button.h" />
+    <ClInclude Include="collision.h" />
+    <ClInclude Include="collisionTestScene.h" />
     <ClInclude Include="commonMacroFunction.h" />
     <ClInclude Include="database.h" />
     <ClInclude Include="dungeonScene.h" />
@@ -96,6 +98,9 @@
     <ClInclude Include="eventBridgeScene.h" />
     <ClInclude Include="eventScene.h" />
     <ClInclude Include="eventShip.h" />
+    <ClInclude Include="eventShipRight.h" />
+    <ClInclude Include="fireLion.h" />
+    <ClInclude Include="follower.h" />
     <ClInclude Include="frameAnimation.h" />
     <ClInclude Include="frameAnimationManager.h" />
     <ClInclude Include="fruit0.h" />
@@ -114,6 +119,7 @@
     <ClInclude Include="progressBar.h" />
     <ClInclude Include="randomFunction.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="reviver.h" />
     <ClInclude Include="sceneManager.h" />
     <ClInclude Include="shooter.h" />
     <ClInclude Include="singletonBase.h" />
@@ -122,6 +128,7 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="storeScene.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="teamBomb.h" />
     <ClInclude Include="test.h" />
     <ClInclude Include="timeManager.h" />
     <ClInclude Include="timer.h" />
@@ -137,6 +144,8 @@
     <ClCompile Include="BossScene.cpp" />
     <ClCompile Include="bullets.cpp" />
     <ClCompile Include="button.cpp" />
+    <ClCompile Include="collision.cpp" />
+    <ClCompile Include="collisionTestScene.cpp" />
     <ClCompile Include="database.cpp" />
     <ClCompile Include="dungeonScene.cpp" />
     <ClCompile Include="effect.cpp" />
@@ -148,6 +157,9 @@
     <ClCompile Include="eventBridgeScene.cpp" />
     <ClCompile Include="eventScene.cpp" />
     <ClCompile Include="eventShip.cpp" />
+    <ClCompile Include="eventShipRight.cpp" />
+    <ClCompile Include="fireLion.cpp" />
+    <ClCompile Include="follower.cpp" />
     <ClCompile Include="frameAnimation.cpp" />
     <ClCompile Include="frameAnimationManager.cpp" />
     <ClCompile Include="fruit0.cpp" />
@@ -164,6 +176,7 @@
     <ClCompile Include="player.cpp" />
     <ClCompile Include="playerEffect.cpp" />
     <ClCompile Include="progressBar.cpp" />
+    <ClCompile Include="reviver.cpp" />
     <ClCompile Include="sceneManager.cpp" />
     <ClCompile Include="shooter.cpp" />
     <ClCompile Include="soundManager.cpp" />
@@ -173,6 +186,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="storeScene.cpp" />
+    <ClCompile Include="teamBomb.cpp" />
     <ClCompile Include="test.cpp" />
     <ClCompile Include="timeManager.cpp" />
     <ClCompile Include="timer.cpp" />

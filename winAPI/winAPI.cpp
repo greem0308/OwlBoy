@@ -19,6 +19,7 @@ int doorFrame;
 int itemCount;
 bool mouseGun;
 bool GeddyThrow;
+bool goDungeon;
 
 gameStudy _gs;
 

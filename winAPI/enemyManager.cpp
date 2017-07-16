@@ -64,3 +64,37 @@ void enemyManager::setEventShip(float x, float y)
 	_vMinion.push_back(_eventShip);
 }
 
+void enemyManager::setEventShipRight(float x, float y)
+{
+	eventShipRight* _eventShipRight = new eventShipRight;
+	_eventShipRight->init(x, y);
+	_eventShipRight->setPlayer(otus);
+	_vMinion.push_back(_eventShipRight);
+}
+
+void enemyManager::setReviver(float x, float y, int length)
+{
+	reviver* _reviver = new reviver;
+	_reviver->init(x, y, length);
+	_reviver->setPlayer(otus);
+	_vMinion.push_back(_reviver);
+}
+
+void enemyManager::setFollower(float x, float y)
+{
+	follower* _follower = new follower;
+	_follower->init(x, y);
+	_follower->setPlayer(otus);
+	_vMinion.push_back(_follower);
+}
+
+
+void enemyManager::setFireLion(float x, float y)
+{
+	fireLion* _fireLion = new fireLion;
+	_fireLion->init(x, y);
+	_fireLion->setPlayer(otus);
+	_vMinion.push_back(_fireLion);
+}
+
+

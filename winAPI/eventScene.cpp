@@ -41,6 +41,9 @@ HRESULT eventScene::init(void)
 	//mimimap vellie
 	IMAGEMANAGER->addImage("minimapBG", "UI/minimapBG.bmp", 3840 / 20, 2880 / 20, true, RGB(255, 0, 255));
 
+	//minimapPoint
+	IMAGEMANAGER->addFrameImage("minimapPoint","UI/minimapPoint.bmp",450,50,9,1,true,RGB(255,0,255));
+
 	_player = new player;
 	_player->init(3037,2222);
 	_player->miniX = 3037;
@@ -60,12 +63,20 @@ HRESULT eventScene::init(void)
 
 	doorPosInit();
 
-	em = new enemyManager;
-	em->init();
-	em->setPlayer(_player);
+	_em = new enemyManager;
+	_em->init();
+	_em->setPlayer(_player);
 	shipShowFrame = 0;
 
 	mapRC = RectMake(1060, 500, 3840 / 20, 2880 / 20);
+
+	hurt = false;
+	hitCount = 0;
+
+	minimapFrameCout = 0;
+	minimapCurrentX = 0;
+
+	goDungeon = false;
 
 	return S_OK;
 }
@@ -80,7 +91,7 @@ void eventScene::release(void)
 void eventScene::update(void)
 {
 	gameNode::update();
-	em->update();
+	_em->update();
 
 	doorPosFunc();
 
@@ -99,6 +110,22 @@ void eventScene::update(void)
 	Delete();
 
 	minimapUpdate();
+
+	collisionFunc();
+
+	// minimap 카운트
+	minimapFrameCout++;
+	if (minimapFrameCout > 6)
+	{
+		minimapFrameCout = 0;
+		minimapCurrentX++;
+		if (minimapCurrentX > 8)
+		{
+			minimapCurrentX = 0;
+		}
+	}
+
+	goDungeon = true;
 }
 
 void eventScene::render(void)
@@ -136,11 +163,12 @@ void eventScene::render(void)
 		Rectangle(getMemDC(), door[i].rc.left, door[i].rc.top, door[i].rc.right, door[i].rc.bottom);
 	}
 
-	em->render();
+	_em->render();
 
 	// minimap Render
 	IMAGEMANAGER->findImage("miniMap")->render(getMemDC(), 0, 0);
 	IMAGEMANAGER->findImage("minimapBG")->render(getMemDC(), 1060, 500);
+	IMAGEMANAGER->findImage("minimapPoint")->frameRender(getMemDC(), 1175, 498, minimapCurrentX, 0);
 
 	HBRUSH miniBrush = CreateSolidBrush(RGB(150, 190, 250));
 	HPEN miniPen = CreatePen(PS_SOLID, 2, RGB(255, 255, 255));
@@ -172,6 +200,21 @@ void eventScene::velliCameraMove()
 
 		cloudX -= _player->_player.x - WINSIZEX / 2;
 
+		// enemyShip
+		for (int i = 0; i < _em->getMinion().size(); ++i)
+		{
+			_em->getMinion()[i]->_enemy.x -= _player->_player.x - WINSIZEX / 2;
+		}
+
+		// enemyShip Bullet
+		for (int i = 0; i < _em->getMinion().size(); ++i)
+		{
+			for (int j = 0; j < _em->getMinion()[i]->_enemy._bullet->getVBullet().size(); j++)
+			{
+				_em->getMinion()[i]->_enemy._bullet->getVBullet()[j].x -= _player->_player.x - WINSIZEX / 2;
+			}
+		}
+
 		_player->_player.x = WINSIZEX / 2;
 	}
 
@@ -190,6 +233,21 @@ void eventScene::velliCameraMove()
 
 		DoorPos[toVellieDoor].x += WINSIZEX / 2 - _player->_player.x;
 
+		// enemyShip
+		for (int i = 0; i < _em->getMinion().size(); ++i)
+		{
+			_em->getMinion()[i]->_enemy.x += WINSIZEX / 2 - _player->_player.x;
+		}
+
+		// enemyShip Bullet
+		for (int i = 0; i < _em->getMinion().size(); ++i)
+		{
+			for (int j = 0; j < _em->getMinion()[i]->_enemy._bullet->getVBullet().size(); j++)
+			{
+				_em->getMinion()[i]->_enemy._bullet->getVBullet()[j].x += WINSIZEX / 2 - _player->_player.x;
+			}
+		}
+
 		_player->_player.x = WINSIZEX / 2;
 	}
 
@@ -207,6 +265,21 @@ void eventScene::velliCameraMove()
 
 		cloudY -= _player->_player.y - WINSIZEY / 2;
 
+		// enemyShip
+		for (int i = 0; i < _em->getMinion().size(); ++i)
+		{
+			_em->getMinion()[i]->_enemy.y -= _player->_player.y - WINSIZEY / 2;
+		}
+
+		// enemyShip Bullet
+		for (int i = 0; i < _em->getMinion().size(); ++i)
+		{
+			for (int j = 0; j < _em->getMinion()[i]->_enemy._bullet->getVBullet().size(); j++)
+			{
+				_em->getMinion()[i]->_enemy._bullet->getVBullet()[j].y -= _player->_player.y - WINSIZEY / 2;
+			}
+		}
+
 		_player->_player.y = WINSIZEY / 2;
 	}
 
@@ -222,6 +295,21 @@ void eventScene::velliCameraMove()
 		}
 
 		cloudY += WINSIZEY / 2 - _player->_player.y;
+
+		// enemyShip
+		for (int i = 0; i < _em->getMinion().size(); ++i)
+		{
+			_em->getMinion()[i]->_enemy.y += WINSIZEY / 2 - _player->_player.y;
+		}
+
+		// enemyShip Bullet
+		for (int i = 0; i < _em->getMinion().size(); ++i)
+		{
+			for (int j = 0; j < _em->getMinion()[i]->_enemy._bullet->getVBullet().size(); j++)
+			{
+				_em->getMinion()[i]->_enemy._bullet->getVBullet()[j].y += WINSIZEY / 2 - _player->_player.y;
+			}
+		}
 
 		DoorPos[toVellieDoor].y += WINSIZEY / 2 - _player->_player.y;
 
@@ -340,20 +428,32 @@ void eventScene::Create(int Num)
 	shipShowFrame++;
 	if (shipShowFrame == 1)
 	{
-		em->setEventShip(WINSIZEX/2, 500);
-		em->setEventShip(1000, 1000);
+		// left
+		_em->setEventShip(1328-3037,474-2222);
+		_em->setEventShip(3815 - 3037,1025 - 2222);
+		_em->setEventShip(2463 - 3037,1150 - 2222);
+		_em->setEventShip(1539 - 3037,1687 - 2222);
+		//em->setEventShip(2335,2092);
+		_em->setEventShip(3505 - 3037,2767 - 2222);
 
-		em->setEventShip(WINSIZEX / 2, 2000);
-		em->setEventShip(2000, 2000);
+		_em->setEventShip(813 - 3037,2595 - 2222);
+
+		// right
+		_em->setEventShipRight(400 - 3037,600 - 2222);
+		_em->setEventShipRight(3216 - 3037,1107 - 2222);
+		_em->setEventShipRight(2040-3037,1398 - 2222);
+		_em->setEventShipRight(3050-3037,1789 - 2222);
+		_em->setEventShipRight(2612-3037,2550 - 2222);
+		_em->setEventShipRight(1631-3037,2312 - 2222);
 	}
 }
 
 // 여긴되는데 
 void eventScene::Delete(void)
 {
-	for (int i = 0; i < em->getMinion().size(); ++i)
+	for (int i = 0; i < _em->getMinion().size(); ++i)
 	{
-		if (em->getMinion()[i]->_enemy.x <300) em->removeMinion(i);
+		//if (_em->getMinion()[i]->_enemy.x <300) _em->removeMinion(i);
 	}
 }
 
@@ -383,5 +483,35 @@ void eventScene::minimapUpdate()
 	{
 		miniRC.bottom = mapRC.bottom;
 		miniRC.top = miniRC.bottom - 10;
+	}
+}
+
+
+
+void eventScene::collisionFunc(void)
+{
+	RECT tempRC;
+	// 적 총알과 플레이어가 충돌하면,
+	for (int i = 0; i < _em->getMinion().size(); ++i)
+	{
+		for (int j = 0; j < _em->getMinion()[i]->_enemy._bullet->getVBullet().size(); j++)
+		{
+			if (IntersectRect(&tempRC, &_player->_player.rc, &_em->getMinion()[i]->_enemy._bullet->getVBullet()[j].rc))
+			{
+				hurt = true;
+				break;
+			}
+		}
+	}
+
+	if (hurt)
+	{
+		hitCount++;
+		if (hitCount % 20 == 0) // 피가 한번만 닳게끔. 
+		{
+			_player->_player.state = HURT;
+			DATABASE->getElementData("player")->currentHP -= 2;
+			hurt = false;
+		}
 	}
 }

@@ -5,6 +5,7 @@
 #include "button.h"
 #include "progressBar.h"
 
+
 #define CURVE_CIRCLE_SIZE 30 // 커브 공 사이즈. 커브 사이간격도 조절함. 
 #define CURVE_CIRCLE_LINE 10 // 커브 공 몇개? 
 

@@ -105,11 +105,11 @@ void bullet::draw(void)
 	}
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////enemyShip
 bulletM1::bulletM1(void)
 {
 }
-
-
 bulletM1::~bulletM1(void)
 {
 }
@@ -213,10 +213,126 @@ void bulletM1::removeBullet(int arrNum)
 	_vBullet.erase(_vBullet.begin() + arrNum);
 }
 
-missileM1::missileM1(void)
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////shooter
+bulletM2::bulletM2(void)
+{
+}
+bulletM2::~bulletM2(void)
 {
 }
 
+//공용으로 쓰는 총알 (쏠때마다 만들고 삭제한다)
+HRESULT bulletM2::init(int bulletMax, float range)
+{
+	gameNode::init();
+
+	_bulletMax = bulletMax;
+	_range = range;
+
+	return S_OK;
+}
+
+void bulletM2::release(void)
+{
+	gameNode::release();
+
+	_vBullet.clear();
+}
+
+void bulletM2::update(void)
+{
+	gameNode::update();
+
+	move();
+}
+
+void bulletM2::render(void)
+{
+	draw();
+}
+
+void bulletM2::fire(float x, float y, float angle,
+	float speed)
+{
+	//발사 갯수 제한 한다
+	if (_bulletMax < _vBullet.size()) return;
+
+	tagBullet bullets;
+	ZeroMemory(&bullets, sizeof(tagBullet));
+
+	bullets.img = IMAGEMANAGER->addFrameImage("rock", "dungeon/rock.bmp", 65/1.4,65/1.4, 1, 1, true, RGB(255, 0, 255));
+	bullets.speed = speed;
+	bullets.angle = angle;
+	bullets.radius = 30;
+	bullets.x = bullets.fireX = x;
+	bullets.y = bullets.fireY = y;
+	bullets.rc = RectMakeCenter(bullets.x, bullets.y,
+		60, 60);
+
+	//KEYANIMANAGER->addCoordinateFrameAnimation("rockFire", "rock", 0, 1, 15, false, true);
+	//KEYANIMANAGER->addCoordinateFrameAnimation("rockDie", "rock", 2, 15, 30, false, true);
+	//
+	//bullets.curAnimation = KEYANIMANAGER->findAnimation("rockFire");
+	//bullets.curAnimation->start();
+	_vBullet.push_back(bullets);
+}
+
+
+void bulletM2::move(void)
+{
+	for (_viBullet = _vBullet.begin(); _viBullet != _vBullet.end();)
+	{
+		_viBullet->x += cosf(_viBullet->angle) * _viBullet->speed;
+		_viBullet->y += -sinf(_viBullet->angle) * _viBullet->speed;
+
+		_viBullet->rc = RectMakeCenter(_viBullet->x + 30, _viBullet->y + 30,
+			_viBullet->img->getFrameWidth() / 1.5, _viBullet->img->getFrameHeight() / 1.5);
+
+		//사거리 밖으로 나가면...
+		if (_range - 30 < getDistance(_viBullet->fireX,
+			_viBullet->fireY, _viBullet->x, _viBullet->y))
+		{
+		//	_viBullet->curAnimation = KEYANIMANAGER->findAnimation("rockDie");
+		//	_viBullet->curAnimation->start();
+		}
+
+		//사거리 밖으로 나가면...
+		if (_range < getDistance(_viBullet->fireX,
+			_viBullet->fireY, _viBullet->x, _viBullet->y))
+		{
+			_viBullet = _vBullet.erase(_viBullet++);
+		}
+		else ++_viBullet;
+	}
+}
+
+void bulletM2::draw(void)
+{
+	for (_viBullet = _vBullet.begin(); _viBullet != _vBullet.end(); ++_viBullet)
+	{
+		//_viBullet->img->aniRender(getMemDC(), _viBullet->rc.left, _viBullet->rc.top, _viBullet->curAnimation);
+		_viBullet->img->frameRender(getMemDC(), _viBullet->rc.left-5, _viBullet->rc.top-5,0,0);
+		
+		Rectangle(getMemDC(),_viBullet->rc.left, _viBullet->rc.top, _viBullet->rc.right, _viBullet->rc.bottom);
+	}
+}
+
+void bulletM2::removeBullet(int arrNum)
+{
+	_vBullet.erase(_vBullet.begin() + arrNum);
+}
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////player
+
+missileM1::missileM1(void)
+{
+}
 
 missileM1::~missileM1(void)
 {
@@ -269,7 +385,7 @@ void missileM1::fire(float x, float y, float angle, int Num,float speed)
 	ZeroMemory(&bullet, sizeof(tagBullet));
 
 	bullet.img = new image;
-	bullet.img->init("bullet.bmp", 64, 32, 2, 1, true, RGB(255, 0, 255));
+	bullet.img->init("player/bullet.bmp", 50,50,1, 1, true, RGB(255, 0, 255));
 	bullet.speed = speed;
 	bullet.angle = angle;
 	bullet.x = bullet.fireX = x + cosf(bullet.angle);

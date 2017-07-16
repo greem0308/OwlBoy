@@ -8,7 +8,7 @@ class eventScene : public gameNode
 public:
 
 	player* _player;
-	enemyManager* em;
+	enemyManager* _em;
 	int shipShowFrame; // 한번만 나타나게 하는 조건.
 
 	//카메라에 연동시켜야하므로 x,y,가 필요함.
@@ -44,6 +44,14 @@ public:
 	int cameraX;
 	int cameraY;
 
+	// 피가 한번만 닳게끔. 
+	bool hurt;
+	int hitCount; 
+
+	// 미니맵 포인트 
+	int minimapFrameCout;
+	int minimapCurrentX;
+
 	virtual HRESULT init(void);
 	virtual void release(void);
 	virtual void update(void);
@@ -54,6 +62,8 @@ public:
 
 	virtual void Delete(void);
 	virtual void Create(int Num);
+
+	virtual void collisionFunc(void);
 
 	RECT miniRC; // 플레이어
 	RECT mapRC;

@@ -24,7 +24,6 @@ HRESULT eventShip::init(float x, float y)
 	_enemy.Count = 0;
 	_enemy.HP = 10;
 	_enemy.AI = false;
-	_enemy.action = ENEMY_MOVE;
 
 	//적  돌.
 	IMAGEMANAGER->addFrameImage("CannonBall", "Scene/event/CannonBall.bmp", 640, 656, 16, 16, true, RGB(255, 0, 255));
@@ -99,53 +98,54 @@ void eventShip::update(void)
 
 	// 총구 가로 애니메이션. 
 	gunFrameFunc();
+
 }
 
 void eventShip::render(void)
 {
-	IMAGEMANAGER->findImage("ship")->render(getMemDC(), _cannon.center.x - 330, _cannon.center.y - 350);
+	IMAGEMANAGER->findImage("ship")->render(getMemDC(), _enemy.x - 330, _enemy.y - 350);
 	
 	HPEN MyPen = CreatePen(PS_SOLID, 2, RGB(255, 0, 0));
 	SelectObject(getMemDC(), MyPen);
 
 	//불빛 각도 위치 알려준다. 
-	LineMake(getMemDC(), _cannon.center.x, _cannon.center.y,
-		_cannon.cannonEnd.x, _cannon.cannonEnd.y);
-	EllipseMakeCenter(getMemDC(), _cannon.center.x, _cannon.center.y,
-		_cannon.radius, _cannon.radius);
+	//LineMake(getMemDC(), _enemy.x, _enemy.y,
+	//	_cannon.cannonEnd.x, _cannon.cannonEnd.y);
+	//EllipseMakeCenter(getMemDC(), _enemy.x, _enemy.y,
+	//	_cannon.radius, _cannon.radius);
+	//
+	//// 직접쏘는 총구 각도위치 알려준다.
+	//LineMake(getMemDC(), _cannon.shootCenter.x, _cannon.shootCenter.y,
+	//	_cannon.shootCenterEnd.x, _cannon.shootCenterEnd.y);
+	//EllipseMakeCenter(getMemDC(), _cannon.shootCenter.x, _cannon.shootCenter.y,
+	//	_cannon.radius, _cannon.radius);
+	//
+	//// 불빛렉트 그려준다. 
+	//for (int i = 0; i < 4; i++)
+	//{
+	//	Ellipse(getMemDC(),lightRC[i].left, lightRC[i].top, lightRC[i].right, lightRC[i].bottom);
+	//}
 
-	// 직접쏘는 총구 각도위치 알려준다.
-	LineMake(getMemDC(), _cannon.shootCenter.x, _cannon.shootCenter.y,
-		_cannon.shootCenterEnd.x, _cannon.shootCenterEnd.y);
-	EllipseMakeCenter(getMemDC(), _cannon.shootCenter.x, _cannon.shootCenter.y,
-		_cannon.radius, _cannon.radius);
-
-	// 불빛렉트 그려준다. 
-	for (int i = 0; i < 4; i++)
-	{
-		Ellipse(getMemDC(),lightRC[i].left, lightRC[i].top, lightRC[i].right, lightRC[i].bottom);
-	}
-
-	IMAGEMANAGER->findImage("light64")->frameRender(getMemDC(), _cannon.center.x - 380, _cannon.center.y - 380, lightFrame64, 0);
-	IMAGEMANAGER->findImage("lightFind32")->frameRender(getMemDC(), _cannon.center.x-65, _cannon.center.y-75, lightFrameNum, 0);
+	IMAGEMANAGER->findImage("light64")->frameRender(getMemDC(), _enemy.x - 380, _enemy.y - 380, lightFrame64, 0);
+	IMAGEMANAGER->findImage("lightFind32")->frameRender(getMemDC(), _enemy.x-65, _enemy.y-75, lightFrameNum, 0);
 
 	_enemy._bullet->render();
 
 	// 총구 애니메이션
 	if (gunState == gunIDLE)
 	{
-		IMAGEMANAGER->findImage("canonWait")->frameRender(getMemDC(), _cannon.center.x + 105,
-			_cannon.center.y - 100, gunCurrentX, gunCurrentY);
+		IMAGEMANAGER->findImage("canonWait")->frameRender(getMemDC(), _enemy.x + 105,
+			_enemy.y - 100, gunCurrentX, gunCurrentY);
 	}
 	if (gunState == gunWAIT)
 	{
-		IMAGEMANAGER->findImage("canonWait")->frameRender(getMemDC(), _cannon.center.x + 105,
-			_cannon.center.y - 100, gunCurrentX, gunCurrentY);
+		IMAGEMANAGER->findImage("canonWait")->frameRender(getMemDC(), _enemy.x + 105,
+			_enemy.y - 100, gunCurrentX, gunCurrentY);
 	}
 	if (gunState == gunSHOOT)
 	{
-		IMAGEMANAGER->findImage("canonShoot")->frameRender(getMemDC(), _cannon.center.x + 105,
-			_cannon.center.y - 100, gunCurrentX, gunCurrentY);
+		IMAGEMANAGER->findImage("canonShoot")->frameRender(getMemDC(), _enemy.x + 105,
+			_enemy.y - 100, gunCurrentX, gunCurrentY);
 	}
 
 	// 불빛 프레임 검사.
@@ -159,16 +159,16 @@ void eventShip::render(void)
 void eventShip::shipShoot()
 {
 	// 끝점.  각도 * 길이 * 중심점. 
-	_cannon.cannonEnd.x = cosf(_cannon.angle) * _cannon.cannon + _cannon.center.x;
-	_cannon.cannonEnd.y = -sinf(_cannon.angle) * _cannon.cannon + _cannon.center.y;
+	_cannon.cannonEnd.x = cosf(_cannon.angle) * _cannon.cannon + _enemy.x;
+	_cannon.cannonEnd.y = -sinf(_cannon.angle) * _cannon.cannon + _enemy.y;
 
 	// 총구 끝점.
 	_cannon.shootCenterEnd.x = cosf(_cannon.shootAngle) * _cannon.cannon + _cannon.shootCenter.x;
 	_cannon.shootCenterEnd.y = -sinf(_cannon.shootAngle) * _cannon.cannon + _cannon.shootCenter.y;
 
 	// 직접 쏠 총구 위치 지정. 
-	_cannon.shootCenter.x = _cannon.center.x + 200;
-	_cannon.shootCenter.y = _cannon.center.y;
+	_cannon.shootCenter.x = _enemy.x + 200;
+	_cannon.shootCenter.y = _enemy.y;
 
 	//플레이어와 진짜 쏘는 총구와의 각도를 구함. 
 	_cannon.shootAngle = getAngle(_cannon.shootCenter.x, _cannon.shootCenter.y, otus->_player.x, otus->_player.y);
@@ -180,7 +180,7 @@ void eventShip::shipShoot()
 
 	if (_cannon.angle >= PI * 2) _cannon.angle -= PI * 2;
 
-	// 불빛 각도 제한.  // 다 만든후 인자로 빼서 변화를 줄 수 있게 할 예정.
+	// 불빛 각도 제한.  // 다 만든 후 인자로 빼서 변화를 줄 수 있게 할 예정.
 	if (anglefirst)_cannon.angle += 0.01f;
 	if (_cannon.angle > PI + PI / 4)
 	{
@@ -201,7 +201,7 @@ void eventShip::shipShoot()
 		if (IntersectRect(&rcTemp, &lightRC[i], &otus->_player.rc))
 		{
 			//플레이어를 따라가게해야함. 그러려면 플레이어와의 각도를 구해서 그 각도로 불빛이 이동. 
-			playerToShipAngle = getAngle(otus->_player.x, otus->_player.y, _cannon.center.x, _cannon.center.y);
+			playerToShipAngle = getAngle(otus->_player.x, otus->_player.y, _enemy.x, _enemy.y);
 
 			if (_cannon.angle < playerToShipAngle)
 			{
@@ -236,38 +236,37 @@ void eventShip::shipShoot()
 
 	// 불빛 렉트들 그려주기. 
 	lightRC[0] = RectMakeCenter(_cannon.cannonEnd.x, _cannon.cannonEnd.y, 110, 110);
-	lightRC[1] = RectMakeCenter(cosf(_cannon.angle) * 260 + _cannon.center.x,
-		-sinf(_cannon.angle) * 260 + _cannon.center.y, 90, 90);
-	lightRC[2] = RectMakeCenter(cosf(_cannon.angle) * 180 + _cannon.center.x,
-		-sinf(_cannon.angle) * 180 + _cannon.center.y, 60, 60);
-	lightRC[3] = RectMakeCenter(cosf(_cannon.angle) * 120 + _cannon.center.x,
-		-sinf(_cannon.angle) * 120 + _cannon.center.y, 50, 50);
+	lightRC[1] = RectMakeCenter(cosf(_cannon.angle) * 260 + _enemy.x,
+		-sinf(_cannon.angle) * 260 + _enemy.y, 90, 90);
+	lightRC[2] = RectMakeCenter(cosf(_cannon.angle) * 180 + _enemy.x,
+		-sinf(_cannon.angle) * 180 + _enemy.y, 60, 60);
+	lightRC[3] = RectMakeCenter(cosf(_cannon.angle) * 120 + _enemy.x,
+		-sinf(_cannon.angle) * 120 + _enemy.y, 50, 50);
 }
 
 void eventShip::shipShake()
 {
 	if (shipShakeUp && !shipShakeDown)
 	{
-		_cannon.center.y -= 0.05f;
+		_enemy.y -= 0.25f;
 	}
 	if (shipShakeDown && !shipShakeUp)
 	{
-		//PostQuitMessage(0);
-		_cannon.center.y += 1.0f;
+		_enemy.y += 0.25f;
 	}
 
 	shipShakeFrame++;
-	if (shipShakeFrame > 120)
+	if (shipShakeFrame > 220)
 	{
 		shipShakeUp = false;
 		shipShakeDown = true;
 	}
-	if (shipShakeFrame < 120)
+	if (shipShakeFrame < 220)
 	{
 		shipShakeUp = true;
 		shipShakeDown = false;
 	}
-	if (shipShakeFrame > 240)
+	if (shipShakeFrame > 440)
 	{
 		shipShakeFrame = 0;
 	}
@@ -311,3 +310,5 @@ void eventShip::gunFrameFunc(void)
 		break;
 	}
 }
+
+

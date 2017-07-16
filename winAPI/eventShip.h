@@ -61,6 +61,7 @@ public:
 	virtual void shipShake(void);
 	virtual void shipShoot(void);
 
+
 	virtual void gunFrameFunc(void);
 
 	eventShip();

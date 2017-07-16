@@ -4,11 +4,9 @@
 #include "animation.h"
 #include "bullets.h"
 
-enum ENEMYACTION
+enum ENEMYDIRECTION
 {
-	ENEMY_MOVE,
-	ENEMY_ATTACK,
-	ENEMY_DIE
+    ERIGHT,ELEFT
 };
 
 class enemy : public gameNode
@@ -16,7 +14,7 @@ class enemy : public gameNode
 public:
 	struct ENEMY
 	{
-		float x, y;
+		float x, y,angle;
 		float fireX, fireY;
 		bool hitCheck;
 		bool life;
@@ -26,10 +24,10 @@ public:
 		RECT HPbar;
 		RECT rc;
 		image* image;
-		bulletM1* _bullet;
-		ENEMYACTION action;
+		bulletM1* _bullet; // enemyShip
+		bulletM2* _bullet2; // shooter
+		ENEMYDIRECTION direction;
 	};
-
 	ENEMY _enemy;
 	animation* curAnimation;
 	player* otus;
