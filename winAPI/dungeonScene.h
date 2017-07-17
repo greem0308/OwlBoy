@@ -14,14 +14,14 @@ enum DOOR
     D_IDLE,D_OPEN
 };
 
-enum LAMP
-{
-	L_IDLE,L_OPEN
-};
-
 enum KEYBLOCK
 {
 	KB_IDLE,KB_DOWN
+};
+
+enum WATERFALL
+{
+	WF_IDLE, WF_LAMPON,WF_FALL
 };
 
 class dungeonScene : public gameNode
@@ -129,8 +129,23 @@ public:
 		float x, y;
 		bool follow;
 
+		// 구름 자체 애니메이션
 		int frameCount;
 		int currentX;
+
+		// 구름에서 떨어지는 물 
+		int waterFrameCount;
+		int waterCurrentX;
+
+		// 우물 프레임. 
+		RECT waterBowl;
+		float wbX, wbY;
+		WATERFALL waterState;
+		int wfFrameCount;
+		int wfCurrentX;
+
+		// 우물 물 차면 램프온되고, 문 오픈 하는 프레임. 
+		int timeFrameCount;
 	};
 
 	// lamp 
@@ -139,7 +154,6 @@ public:
 		RECT rc;
 		float x, y;
 		bool up;
-		LAMP lampState;
 	};
 
 	tagPuzzleRock puzzleRock;

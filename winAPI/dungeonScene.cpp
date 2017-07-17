@@ -20,7 +20,7 @@ HRESULT dungeonScene::init(void)
 	IMAGEMANAGER->addImage("dungeonPixelPink", "dungeon/pixelPink.bmp", 3840, 2880, false);
 
 	// cloudWater
-	IMAGEMANAGER->addImage("cloudWater", "dungeon/cloudWater.bmp", 31*1.5, 110 * 1.5, true, RGB(255, 0, 255));
+	IMAGEMANAGER->addFrameImage("cloudWater", "dungeon/cloudWater.bmp", 360,1000,6,1, true, RGB(255, 0, 255));
 	// puzzleRock
 	IMAGEMANAGER->addImage("puzzleRock", "dungeon/puzzleRock.bmp", 190,215, true, RGB(255, 0, 255));
 	// 키블록
@@ -40,8 +40,12 @@ HRESULT dungeonScene::init(void)
 	// teamBomb
 	IMAGEMANAGER->addFrameImage("teamBomb", "dungeon/teamBomb.bmp", 488 * 1.5,276 * 1.5, 8, 4, true, RGB(255, 0, 255));
 
+	// container
+	IMAGEMANAGER->addFrameImage("container","dungeon/container.bmp", 4410,750, 30,3, true, RGB(255, 0, 255));
+
 	_player = new player;
 	_player->init(3100,1900);
+	//_player->init(900, 100);
 
 	cameraX = 0;
 	cameraY = 0;
@@ -113,6 +117,25 @@ void dungeonScene::render(void)
 
 	IMAGEMANAGER->findImage("dungeonPixelPink")->render(getPixel(),cameraX,cameraY);
 	IMAGEMANAGER->findImage("layer2BG")->render(getMemDC(),cameraX, cameraY);
+	
+	//우물은 물 뒤에 렌더. 
+	for (int i = 0; i < 2; i++)
+	{
+		IMAGEMANAGER->findImage("container")->frameRender(getMemDC(),cloud[i].waterBowl.left-30, cloud[i].waterBowl.top-80, cloud[i].wfCurrentX, cloud[i].waterState);
+	}
+
+	// 물은 벽돌 뒤에 보이게 렌더한다.
+	for (int i = 0; i < 2; i++)
+	{
+		if (cloud[i].life)
+		{
+			if (cloud[i].waterFall)
+			{
+				IMAGEMANAGER->findImage("cloudWater")->frameRender(getMemDC(), cloud[i].waterRC.left, cloud[i].waterRC.top
+					, cloud[i].waterCurrentX, 0);
+			}
+		}
+	}
 	IMAGEMANAGER->findImage("layer1BG")->render(getMemDC(), cameraX, cameraY);
 
 	// 도구들 이미지 렌더. 
@@ -130,9 +153,6 @@ void dungeonScene::render(void)
 	IMAGEMANAGER->findImage("dungeonDoor2")->frameRender(getMemDC(), door[2].rc.left - 10, door[2].rc.top, 
 		door[2].currentX, 0);
 
-
-	cloudRender();
-
 	if (!puzzleRock.Break)
 	{
 		IMAGEMANAGER->findImage("puzzleRock")->render(getMemDC(), puzzleRock.rc.left, puzzleRock.rc.top);
@@ -142,7 +162,9 @@ void dungeonScene::render(void)
 
 	CurveLineRender();
 
-	showRect();
+	//showRect();
+
+	cloudRender();
 
 	_em->render();
 	_player->render();
@@ -155,7 +177,15 @@ void dungeonScene::render(void)
 }
 
 
-//던전 배경 크기 3840,2880
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+//던전 배경 크기 3840,2880 ///////////////////////////////////////////////////////////////////////////////////camera,showRect
 void dungeonScene::dungeonCameraMove()
 {
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -208,6 +238,8 @@ void dungeonScene::dungeonCameraMove()
 		for (int i = 0; i < 2; i++)
 		{
 			cloud[i].x -= _player->_player.x - WINSIZEX / 2;
+			//우물 
+			cloud[i].wbX -= _player->_player.x - WINSIZEX / 2;
 		}
 
 		puzzleRock.x -= _player->_player.x - WINSIZEX / 2;
@@ -262,6 +294,8 @@ void dungeonScene::dungeonCameraMove()
 		for (int i = 0; i < 2; i++)
 		{
 			cloud[i].x += WINSIZEX / 2 - _player->_player.x;
+			//우물 
+			cloud[i].wbX += WINSIZEX / 2 - _player->_player.x;
 		}
 
 		teamBomb.x += WINSIZEX / 2 - _player->_player.x;
@@ -317,6 +351,8 @@ void dungeonScene::dungeonCameraMove()
 		for (int i = 0; i < 2; i++)
 		{
 			cloud[i].y -= _player->_player.y - WINSIZEY / 2;
+			//우물 
+			cloud[i].wbY -= _player->_player.y - WINSIZEY / 2;
 		}
 		teamBomb.y -= _player->_player.y - WINSIZEY / 2;
 		puzzleRock.y -= _player->_player.y - WINSIZEY / 2;
@@ -372,6 +408,8 @@ void dungeonScene::dungeonCameraMove()
 		for (int i = 0; i < 2; i++)
 		{
 			cloud[i].y += WINSIZEY / 2 - _player->_player.y;
+			//우물 
+			cloud[i].wbY += WINSIZEY / 2 - _player->_player.y;
 		}
 		teamBomb.y += WINSIZEY / 2 - _player->_player.y;
 		puzzleRock.y += WINSIZEY / 2 - _player->_player.y;
@@ -387,6 +425,107 @@ void dungeonScene::dungeonCameraMove()
 	if (_player->_player.y >WINSIZEY - 50) _player->_player.y = WINSIZEY - 50;
 }
 
+void dungeonScene::showRect()
+{
+	char str[256];
+	SetTextColor(getMemDC(), RGB(0, 0, 255));
+	HFONT myFont = CreateFont(28, 0, 0, 0, 1, 0, 0, 0, HANGEUL_CHARSET, 3, 2, 1, VARIABLE_PITCH | FF_ROMAN, TEXT("System"));
+	SelectObject(getMemDC(), myFont);
+
+	//enemy position
+	for (int i = 0; i < _em->getMinion().size(); i++)
+	{
+		sprintf(str, "%0.2f", _em->getMinion()[i]->_enemy.x);
+		sprintf(str, "%0.2f", _em->getMinion()[i]->_enemy.y);
+	}
+	TextOut(getMemDC(), 100, 650, str, strlen(str));
+	TextOut(getMemDC(), 200, 650, str, strlen(str));
+
+	sprintf(str, "door : %0.2f", door[0].x);
+	TextOut(getMemDC(), 30, 450, str, strlen(str));
+
+	sprintf(str, "bombX : %0.2f", teamBomb.x);
+	TextOut(getMemDC(), 30, 550, str, strlen(str));
+	sprintf(str, "bombY : %0.2f", teamBomb.y);
+	TextOut(getMemDC(), 30, 600, str, strlen(str));
+
+	// enemy
+	for (int i = 0; i < _em->getMinion().size(); ++i)
+	{
+		Rectangle(getMemDC(), _em->getMinion()[i]->_enemy.rc.left, _em->getMinion()[i]->_enemy.rc.top,
+			_em->getMinion()[i]->_enemy.rc.right, _em->getMinion()[i]->_enemy.rc.bottom);
+	}
+	//Rectangle(getMemDC(), rc.left, rc.top, rc.right, rc.bottom);
+
+
+	// 도구들 rc ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	// 문, 키블록
+	for (int i = 0; i<3; i++)
+	{
+		//  Rectangle(getMemDC(),keyBlock[i].rc.left, keyBlock[i].rc.top, keyBlock[i].rc.right, keyBlock[i].rc.bottom);
+		//	Rectangle(getMemDC(), keyBlock[i].collisionRC.left, keyBlock[i].collisionRC.top,
+		//		keyBlock[i].collisionRC.right, keyBlock[i].collisionRC.bottom);
+		// Rectangle(getMemDC(), door[i].rc.left, door[i].rc.top, door[i].rc.right, door[i].rc.bottom);
+		if (!door[i].open)
+		{
+			Rectangle(getMemDC(), door[i].collisionRC.left, door[i].collisionRC.top, door[i].collisionRC.right, door[i].collisionRC.bottom);
+		}
+	}
+
+	//시한 폭탄
+	//Rectangle(getMemDC(),teamBomb.rc.left, teamBomb.rc.top, teamBomb.rc.right, teamBomb.rc.bottom);
+
+	// 구름
+	//for (int i = 0; i < 2; i++)
+	//{
+	//	if (cloud[i].life)
+	//	{
+	//		Rectangle(getMemDC(), cloud[i].rc.left, cloud[i].rc.top, cloud[i].rc.right, cloud[i].rc.bottom);
+	//	}
+	//}
+
+	// 터뜨릴 블록
+	//if (!puzzleRock.Break)
+	//{
+	//	Rectangle(getMemDC(), puzzleRock.rc.left, puzzleRock.rc.top, puzzleRock.rc.right, puzzleRock.rc.bottom);
+	//}
+}
+
+void dungeonScene::updateRC()
+{
+	// 움직이는 도구들 rc 
+	for (int i = 0; i<3; i++)
+	{
+		keyBlock[i].collisionRC = RectMake(keyBlock[i].cx, keyBlock[i].cy, 90, 50);
+		keyBlock[i].rc = RectMake(keyBlock[i].x, keyBlock[i].y, 90, 50);
+
+		// 콜리젼 문만 설정. 
+		if (!door[i].open)
+		{
+			door[i].collisionRC = RectMake(door[i].cx, door[i].cy, 80, 300);
+		}
+		// 이미지를 위한 문.. 
+		door[i].rc = RectMake(door[i].x, door[i].y, 80, 300);
+	}
+
+	// 구름 렉트. 
+	for (int i = 0; i < 2; i++)
+	{
+		if (cloud[i].life)
+		{
+			cloud[i].rc = RectMakeCenter(cloud[i].x, cloud[i].y, 140, 75);
+		}
+	}
+
+	// 퍼즐 렉트
+	if (!puzzleRock.Break)
+	{
+		puzzleRock.rc = RectMake(puzzleRock.x, puzzleRock.y, puzzleRock.radius, puzzleRock.radius + 20);
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////cteate,delete
 void dungeonScene::Create(int Num)
 {
 	enemyShowFrame++;
@@ -414,7 +553,7 @@ void dungeonScene::Delete(void)
 	}
 }
 
-// 적들과의 충돌. 
+// 적들과의 충돌. ////////////////////////////////////////////////////////////////////////////////////////////////충돌 함수들
 void dungeonScene::collisionFunc(void)
 {
 	RECT tempRC;
@@ -479,13 +618,25 @@ void dungeonScene::toolCollisionFunc()
 		puzzleRock.Break = true;
 		teamBomb.life = false;
 	}
+
+	// 플레이어 총알과 문 렉트가 충돌 _____________________________________________________________________________________
+	for (int i = 0; i<3; ++i)
+	{
+		for (int j = 0; j < _player->_player._fire->getVBullet().size(); j++)
+		{
+			if (IntersectRect(&rcTemp, &_player->_player._fire->getVBullet()[j].rc, &door[i].rc))
+			{
+				_player->removeMissile(j);
+			}
+		}
+	}
 }
 
 // 도구 애니메이션.
 void dungeonScene::toolFrameFunc()
 {
 	// 구름 프레임. 
-	for (int i = 9; i < 2; i++)
+	for (int i = 0; i < 2; i++)
 	{
 		cloud[i].frameCount++;
 		if (cloud[i].frameCount > 15)
@@ -496,6 +647,58 @@ void dungeonScene::toolFrameFunc()
 			{
 				cloud[i].currentX = 0;
 			}
+		}
+	}
+	
+	// 구름 물 프레임. 
+	for (int i = 0; i < 2; i++)
+	{
+		cloud[i].waterFrameCount++;
+		if (cloud[i].waterFrameCount > 10)
+		{
+			cloud[i].waterFrameCount = 0;
+			cloud[i].waterCurrentX++;
+			if (cloud[i].waterCurrentX > 5)
+			{
+				cloud[i].waterCurrentX = 0;
+			}
+		}
+	}
+
+	// 우물 프레임. 
+	for (int i = 0; i < 2; i++)
+	{
+		cloud[i].wfFrameCount++;
+		switch (cloud[i].waterState)
+		{
+		case WF_IDLE:
+			cloud[i].wfCurrentX = 0;
+			break;
+		case WF_LAMPON:
+			if (cloud[i].wfFrameCount > 15)
+			{
+				cloud[i].wfFrameCount = 0;
+				cloud[i].wfCurrentX++;
+				if (cloud[i].wfCurrentX > 1)
+				{
+					cloud[i].wfCurrentX = 0;
+				}
+			}
+			break;
+		case WF_FALL:
+			if (cloud[i].wfFrameCount > 15)
+			{
+				cloud[i].wfFrameCount = 0;
+				cloud[i].wfCurrentX++;
+				if (cloud[i].wfCurrentX > 27)
+				{
+					cloud[i].wfCurrentX = 27;
+				}
+			}
+			break;
+
+		default:
+			break;
 		}
 	}
 
@@ -641,111 +844,7 @@ void dungeonScene::keyBlockCollision()
 
 }
 
-
-void dungeonScene::showRect()
-{
-	char str[256];
-	SetTextColor(getMemDC(), RGB(0, 0, 255));
-	HFONT myFont = CreateFont(28, 0, 0, 0, 1, 0, 0, 0, HANGEUL_CHARSET, 3, 2, 1, VARIABLE_PITCH | FF_ROMAN, TEXT("System"));
-	SelectObject(getMemDC(), myFont);
-
-	//enemy position
-	for (int i = 0; i < _em->getMinion().size(); i++)
-	{
-		sprintf(str, "%0.2f", _em->getMinion()[i]->_enemy.x);
-		sprintf(str, "%0.2f", _em->getMinion()[i]->_enemy.y);
-	}
-	TextOut(getMemDC(), 100, 650, str, strlen(str));
-	TextOut(getMemDC(), 200, 650, str, strlen(str));
-
-	sprintf(str, "door : %0.2f", door[0].x);
-	TextOut(getMemDC(), 30, 450, str, strlen(str));
-	
-	sprintf(str, "bombX : %0.2f", teamBomb.x);
-	TextOut(getMemDC(), 30, 550, str, strlen(str));
-	sprintf(str, "bombY : %0.2f", teamBomb.y);
-	TextOut(getMemDC(), 30, 600, str, strlen(str));
-
-	// enemy
-	for (int i = 0; i < _em->getMinion().size(); ++i)
-	{
-		Rectangle(getMemDC(), _em->getMinion()[i]->_enemy.rc.left, _em->getMinion()[i]->_enemy.rc.top,
-			_em->getMinion()[i]->_enemy.rc.right, _em->getMinion()[i]->_enemy.rc.bottom);
-	}
-	//Rectangle(getMemDC(), rc.left, rc.top, rc.right, rc.bottom);
-
-
-	// 도구들 rc ///////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	// 문, 키블록
-	for (int i = 0; i<3; i++)
-	{
-	 //  Rectangle(getMemDC(),keyBlock[i].rc.left, keyBlock[i].rc.top, keyBlock[i].rc.right, keyBlock[i].rc.bottom);
-		//	Rectangle(getMemDC(), keyBlock[i].collisionRC.left, keyBlock[i].collisionRC.top,
-		//		keyBlock[i].collisionRC.right, keyBlock[i].collisionRC.bottom);
-	     // Rectangle(getMemDC(), door[i].rc.left, door[i].rc.top, door[i].rc.right, door[i].rc.bottom);
-		if (!door[i].open)
-		{
-			   Rectangle(getMemDC(), door[i].collisionRC.left, door[i].collisionRC.top, door[i].collisionRC.right, door[i].collisionRC.bottom);
-		}
-	}
-
-	//시한 폭탄
-	//Rectangle(getMemDC(),teamBomb.rc.left, teamBomb.rc.top, teamBomb.rc.right, teamBomb.rc.bottom);
-
-	// 구름
-	//for (int i = 0; i < 2; i++)
-	//{
-	//	if (cloud[i].life)
-	//	{
-	//		Rectangle(getMemDC(), cloud[i].rc.left, cloud[i].rc.top, cloud[i].rc.right, cloud[i].rc.bottom);
-	//	}
-	//}
-
-	// 터뜨릴 블록
-	//if (!puzzleRock.Break)
-	//{
-	//	Rectangle(getMemDC(), puzzleRock.rc.left, puzzleRock.rc.top, puzzleRock.rc.right, puzzleRock.rc.bottom);
-	//}
-}
-
-
-void dungeonScene::updateRC()
-{
-
-
-	// 움직이는 도구들 rc 
-	for (int i = 0; i<3; i++)
-	{
-		keyBlock[i].collisionRC = RectMake(keyBlock[i].cx, keyBlock[i].cy, 90, 50);
-		keyBlock[i].rc = RectMake(keyBlock[i].x, keyBlock[i].y, 90, 50);
-
-		// 콜리젼 문만 설정. 
-		if (!door[i].open)
-		{
-			door[i].collisionRC = RectMake(door[i].cx, door[i].cy, 80, 300);
-		}
-		// 이미지를 위한 문.. 
-		door[i].rc = RectMake(door[i].x, door[i].y, 80, 300);
-	}
-
-	// 구름 렉트. 
-	for (int i = 0; i < 2; i++)
-	{
-		if (cloud[i].life)
-		{
-			cloud[i].rc = RectMakeCenter(cloud[i].x, cloud[i].y, 140, 75);
-		}
-	}
-
-	// 퍼즐 렉트
-	if (!puzzleRock.Break)
-	{
-		puzzleRock.rc = RectMake(puzzleRock.x, puzzleRock.y, puzzleRock.radius, puzzleRock.radius + 20);
-	}
-}
-
-// 문 함수 _____________________________________________________________________________________________
+// 문 함수 ______________________________________________________________________________________________________ 문
 void dungeonScene::doorFunc0()
 {
 	// 만약 키블록이랑 충돌하면, 문이 오픈.
@@ -886,7 +985,7 @@ void dungeonScene::doorInit()
 
 }
 
-// 시한폭탄 함수 _____________________________________________________________________________________________
+// 시한폭탄 함수 ________________________________________________________________________________________________시한 폭탄
 void dungeonScene::teamBombInit()
 {
 	teamBomb.life = true;
@@ -1088,8 +1187,7 @@ void dungeonScene::CurveLineRender(void)
 }
 
 
-
-// 구름 ____________________________________________________________________________________________구름
+// 구름 _________________________________________________________________________________________________________구름
 void dungeonScene:: cloudInit()
 {
 	for (int i = 0; i < 2; i++)
@@ -1099,12 +1197,24 @@ void dungeonScene:: cloudInit()
 		cloud[i].frameCount = 0;
 		cloud[i].currentX = 0;
 		cloud[i].follow = false;
-	}
+		cloud[i].waterCurrentX = 0;
+		cloud[i].waterFrameCount = 0;
 
+		cloud[i].waterState = WF_IDLE; //우물 스테이트
+		cloud[i].wfFrameCount = 0;
+		cloud[i].wfCurrentX = 0;
+		cloud[i].timeFrameCount = 0;
+	}
 	cloud[0].x = 1250;
-	cloud[0].y = 210;
+	cloud[0].y = 220;
 	cloud[1].x = 3650;
-	cloud[1].y = 210;
+	cloud[1].y = 220;
+
+	//500,412
+	cloud[0].wbX = 560;
+	cloud[0].wbY = 520;
+	cloud[1].wbX = 2060;
+	cloud[1].wbY = 710;
 }
 
 void dungeonScene::cloudUpdate()
@@ -1115,9 +1225,10 @@ void dungeonScene::cloudUpdate()
 		RECT rcTemp;
 		if (IntersectRect(&rcTemp, &_player->_player.rc, &cloud[i].rc))
 		{
-			if (KEYMANAGER->isOnceKeyDown(MK_LBUTTON))
+			if (KEYMANAGER->isOnceKeyDown('0'))
 			{
 				cloud[i].follow = true;
+				cloud[i].waterFall = false;
 			}
 		}
 	}
@@ -1135,6 +1246,7 @@ void dungeonScene::cloudUpdate()
 			{
 				cloud[i].follow = false;
 				_player->_player.state = FLYIDLE;
+				cloud[i].waterFall = false;
 			}
 		}
 	}
@@ -1147,6 +1259,7 @@ void dungeonScene::cloudUpdate()
 		{
 			if (IntersectRect(&rcTemp, &_player->_player.rc, &cloud[i].rc))
 			{
+				cloud[i].waterFall = true; // 물뿌림 
 				_player->_player.ground = true; // 땅이라고 알려줌. 
 				_player->_player.y += _player->_player.groundgrv; // 플레이어y += 땅 그래피티 
 				_player->miniY += _player->_player.groundgrv;
@@ -1169,8 +1282,50 @@ void dungeonScene::cloudUpdate()
 					_player->_player.state = IDLE;
 				}
 			}
+			else
+			{
+				cloud[i].waterFall = false;
+			}
 		}
 	}
+
+
+	// 물 뿌림. 
+	for (int i = 0; i < 2; i++)
+	{
+		if (cloud[i].waterFall) 
+		{
+			cloud[i].waterRC = RectMake(cloud[i].x-30, cloud[i].y+20,60,1000);
+		}
+		else
+		{
+			cloud[i].waterRC = RectMake(0,0,10,10);
+		}
+	}
+
+	// 우물 렉트
+	for (int i = 0; i < 2; i++)
+	{
+		cloud[i].waterBowl = RectMake(cloud[i].wbX, cloud[i].wbY,90,150);
+	}
+
+	// 만약 우물렉트랑 구름물 렉트랑 부딧치면, 
+	for (int i = 0; i < 2; i++)
+	{
+			if (IntersectRect(&rcTemp, &cloud[i].waterRC, &cloud[i].waterBowl))
+			{
+				cloud[i].waterState = WF_FALL;
+				cloud[i].timeFrameCount++;
+				if (cloud[i].timeFrameCount > 120)
+				{
+					//PostQuitMessage(0);
+					cloud[i].waterState = WF_LAMPON;
+					door[2].open = true;
+					door[2].doorState = D_OPEN;
+				}
+			}
+	}
+	
 }//func
 
 void dungeonScene:: cloudRender()
@@ -1180,6 +1335,8 @@ void dungeonScene:: cloudRender()
 		if (cloud[i].life)
 		{
 			IMAGEMANAGER->findImage("cloud")->frameRender(getMemDC(), cloud[i].rc.left, cloud[i].rc.top, cloud[i].currentX, 0);
-		}
+			//Rectangle(getMemDC(), cloud[i].waterBowl.left, cloud[i].waterBowl.top, cloud[i].waterBowl.right, 
+			//	cloud[i].waterBowl.bottom);
+	    }
 	}
 }
