@@ -59,7 +59,7 @@ void soundManager::release(void)
 	_mTotalSounds.clear();
 }
 
-void soundManager::addSound(string keyName, 
+void soundManager::addSound(string keyName,
 	string soundName, bool background, bool loop)
 {
 	//반복이냐?
@@ -77,11 +77,19 @@ void soundManager::addSound(string keyName,
 				FMOD_LOOP_NORMAL, 0, &_sound[_mTotalSounds.size()]);
 		}
 	}
-	else 
+	else
 	{
-		//한번만 사운드 재생
-		_system->createSound(soundName.c_str(),
-			FMOD_DEFAULT, 0, &_sound[_mTotalSounds.size()]);
+		//배경음임?
+		if (background)
+		{
+			_system->createStream(soundName.c_str(),
+				FMOD_DEFAULT, 0, &_sound[_mTotalSounds.size()]);
+		}
+		else
+		{
+			_system->createSound(soundName.c_str(),
+				FMOD_DEFAULT, 0, &_sound[_mTotalSounds.size()]);
+		}
 	}
 
 	//맵에 사운드를 키값과 함께 넣어준다
@@ -99,13 +107,12 @@ void soundManager::play(string keyName)
 		if (keyName == iter->first)
 		{
 			//사운드 플레이~~~
-			_system->playSound(FMOD_CHANNEL_FREE, 
-				*iter->second, false, &_channel[count]);
+			_system->playSound(FMOD_CHANNEL_FREE,
+				_sound[count], false, &_channel[count]);
 		}
 	}
-} 
+}
 
-//범위 0.0 ~ 1.0
 void soundManager::play(string keyName, float volume)
 {
 	arrSoundsIter iter = _mTotalSounds.begin();
@@ -117,13 +124,14 @@ void soundManager::play(string keyName, float volume)
 		if (keyName == iter->first)
 		{
 			//사운드 플레이~~~
-			_system->playSound(FMOD_CHANNEL_FREE, 
-				*iter->second, false, &_channel[count]);
+			_system->playSound(FMOD_CHANNEL_FREE,
+				_sound[count], false, &_channel[count]);
 			_channel[count]->setVolume(volume);
 		}
 	}
 }
 
+// 중지. 
 void soundManager::stop(string keyName)
 {
 	arrSoundsIter iter = _mTotalSounds.begin();
@@ -135,11 +143,11 @@ void soundManager::stop(string keyName)
 		if (keyName == iter->first)
 		{
 			_channel[count]->stop();
-			break;
 		}
 	}
 }
 
+// 가서 건드려서 중지시킨다. 
 void soundManager::pause(string keyName)
 {
 	arrSoundsIter iter = _mTotalSounds.begin();
@@ -151,11 +159,11 @@ void soundManager::pause(string keyName)
 		if (keyName == iter->first)
 		{
 			_channel[count]->setPaused(true);
-			break;
 		}
 	}
 }
 
+// 가서 중지를 다시 펄스로 바꾼다.
 void soundManager::resume(string keyName)
 {
 	arrSoundsIter iter = _mTotalSounds.begin();
@@ -167,105 +175,140 @@ void soundManager::resume(string keyName)
 		if (keyName == iter->first)
 		{
 			_channel[count]->setPaused(false);
-			break;
 		}
 	}
 }
 
+//정지 되어있는지 확인한다.
 bool soundManager::isPause(string keyName)
 {
-	bool pause;
 	arrSoundsIter iter = _mTotalSounds.begin();
+
 	int count = 0;
+
+	bool temp;
 
 	for (iter; iter != _mTotalSounds.end(); ++iter, count++)
 	{
 		if (keyName == iter->first)
 		{
-			_channel[count]->getPaused(&pause);
-			break;
+			_channel[count]->getPaused(&temp);
 		}
 	}
-
-	return pause;
+	return temp;
 }
 
+//플레이가 되고 있는지 확인
 bool soundManager::isPlay(string keyName)
 {
-	bool pause;
 	arrSoundsIter iter = _mTotalSounds.begin();
+
+	int count = 0;
+
+	bool temp;
+
+	for (iter; iter != _mTotalSounds.end(); ++iter, count++)
+	{
+		if (keyName == iter->first)
+		{
+			_channel[count]->isPlaying(&temp);
+		}
+	}
+	return temp;
+}
+
+float soundManager::getVolume(string keyName)
+{
+	arrSoundsIter iter = _mTotalSounds.begin();
+
+	int count = 0;
+
+	float temp = 0;
+
+	for (iter; iter != _mTotalSounds.end(); ++iter, count++)
+	{
+		if (keyName == iter->first)
+		{
+			_channel[count]->getVolume(&temp);
+		}
+	}
+	return temp;
+}
+
+void soundManager::setVolume(string keyName, float Volume)
+{
+	arrSoundsIter iter = _mTotalSounds.begin();
+
 	int count = 0;
 
 	for (iter; iter != _mTotalSounds.end(); ++iter, count++)
 	{
 		if (keyName == iter->first)
 		{
-			_channel[count]->isPlaying(&pause);
-			break;
+			_channel[count]->setVolume(getVolume(keyName) + Volume);
 		}
 	}
-
-	return pause;
 }
 
-//음악 길이값 가져옴.
+unsigned int soundManager::getTotalLength(string keyName)
+{
+	arrSoundsIter iter = _mTotalSounds.begin();
+
+	int count = 0;
+
+	unsigned int temp = 0;
+
+	for (iter; iter != _mTotalSounds.end(); ++iter, count++)
+	{
+		if (keyName == iter->first)
+		{
+			_sound[count]->getLength(&temp, FMOD_TIMEUNIT_MS);
+		}
+	}
+	return temp;
+}
+
 unsigned int soundManager::getLength(string keyName)
 {
 	arrSoundsIter iter = _mTotalSounds.begin();
-	
-	for (iter; iter != _mTotalSounds.end(); ++iter)
+
+	int count = 0;
+
+	unsigned int temp = 0;
+
+	for (iter; iter != _mTotalSounds.end(); ++iter, count++)
 	{
 		if (keyName == iter->first)
 		{
-			unsigned int length = 0;
-			(*iter->second)->getLength(&length, FMOD_TIMEUNIT_MS);
-
-			return length;
+			_channel[count]->getPosition(&temp, FMOD_TIMEUNIT_MS);
 		}
 	}
-
-	return NULL;
+	return temp;
 }
 
-//음악 재생 위치 설정
-void soundManager::setPosition(string keyName, unsigned int ms)
+
+void soundManager::setLength(string keyName, unsigned int Length)
 {
 	arrSoundsIter iter = _mTotalSounds.begin();
+
 	int count = 0;
 
 	for (iter; iter != _mTotalSounds.end(); ++iter, count++)
 	{
 		if (keyName == iter->first)
 		{
-			_channel[count]->setPosition(ms, FMOD_TIMEUNIT_MS);
-			break;
+			_channel[count]->setPosition(Length, FMOD_TIMEUNIT_MS);
 		}
 	}
 }
 
-unsigned int soundManager::getPosition(string keyName)
-{
-	arrSoundsIter iter = _mTotalSounds.begin();
-	int count = 0;
 
-	for (iter; iter != _mTotalSounds.end(); ++iter, count++)
-	{
-		if (keyName == iter->first)
-		{
-			unsigned int length = 0;
-			_channel[count]->getPosition(&length, FMOD_TIMEUNIT_MS);
-			return length;
-		}
-	}
 
-	return NULL;
-}
+//unsigned int soundManager::
 
 //fmod 시스템 갱신한다
 void soundManager::update(void)
 {
 	_system->update();
-	//볼륨이 바뀌거나
-	//재생이 끝난 사운드를 채널에서 빼는등의 작업을 자동으로 해줌..
 }
 

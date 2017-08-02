@@ -49,7 +49,7 @@ HRESULT eventShip::init(float x, float y)
 	// ½ò ÃÑ±¸ÀÇ ÁÂÇ¥.
 	_cannon.shootCenter.x = 700;
 	_cannon.shootCenter.y = 600;
-	_cannon.shootAngle = PI;
+	_cannon.shootAngle = -1;
 
 	fire = false;
 
@@ -78,6 +78,9 @@ HRESULT eventShip::init(float x, float y)
 	gunCurrentX=0; 
 	gunCurrentY=0; 
 
+	tempX = 0;
+	tempY = 0;
+	
 	return S_OK;
 }
 
@@ -171,7 +174,15 @@ void eventShip::shipShoot()
 	_cannon.shootCenter.y = _enemy.y;
 
 	//ÇÃ·¹ÀÌ¾î¿Í ÁøÂ¥ ½î´Â ÃÑ±¸¿ÍÀÇ °¢µµ¸¦ ±¸ÇÔ. 
-	_cannon.shootAngle = getAngle(_cannon.shootCenter.x, _cannon.shootCenter.y, otus->_player.x, otus->_player.y);
+	//if (_cannon.shootAngle != -1)
+	//{
+	if (tempX == 0)
+	{
+		tempX = otus->_player.x;
+		tempY = otus->_player.y;
+	}
+	_cannon.shootAngle = getAngle(_cannon.shootCenter.x, _cannon.shootCenter.y, tempX, tempY);
+	//}
 
 	// ºÒºû Ã£´Â...
 	lightFrameNum = int(_cannon.angle / PI_16); // 32¹æÇâ 
@@ -229,6 +240,7 @@ void eventShip::shipShoot()
 			if (_cannon.angle >= PI * 2) _cannon.angle -= PI * 2;
 			if (_cannon.shootAngle >= PI * 2) _cannon.shootAngle -= PI * 2;
 			_enemy._bullet->fire(_cannon.shootCenter.x, _cannon.shootCenter.y, _cannon.shootAngle, 10.0f);
+			otus->se4 = true;
 			frameCount = 0;
 			fire = false;
 		}
@@ -244,33 +256,6 @@ void eventShip::shipShoot()
 		-sinf(_cannon.angle) * 120 + _enemy.y, 50, 50);
 }
 
-void eventShip::shipShake()
-{
-	if (shipShakeUp && !shipShakeDown)
-	{
-		_enemy.y -= 0.25f;
-	}
-	if (shipShakeDown && !shipShakeUp)
-	{
-		_enemy.y += 0.25f;
-	}
-
-	shipShakeFrame++;
-	if (shipShakeFrame > 220)
-	{
-		shipShakeUp = false;
-		shipShakeDown = true;
-	}
-	if (shipShakeFrame < 220)
-	{
-		shipShakeUp = true;
-		shipShakeDown = false;
-	}
-	if (shipShakeFrame > 440)
-	{
-		shipShakeFrame = 0;
-	}
-}
 
 void eventShip::gunFrameFunc(void)
 {
@@ -312,3 +297,30 @@ void eventShip::gunFrameFunc(void)
 }
 
 
+void eventShip::shipShake()
+{
+	if (shipShakeUp && !shipShakeDown)
+	{
+		_enemy.y -= 0.25f;
+	}
+	if (shipShakeDown && !shipShakeUp)
+	{
+		_enemy.y += 0.25f;
+	}
+
+	shipShakeFrame++;
+	if (shipShakeFrame > 220)
+	{
+		shipShakeUp = false;
+		shipShakeDown = true;
+	}
+	if (shipShakeFrame < 220)
+	{
+		shipShakeUp = true;
+		shipShakeDown = false;
+	}
+	if (shipShakeFrame > 440)
+	{
+		shipShakeFrame = 0;
+	}
+}

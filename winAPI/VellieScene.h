@@ -3,6 +3,8 @@
 #include "player.h"
 #include "itemManager.h"
 
+#define RINGMAX 30
+
 class VellieScene : public gameNode
 {
 public:
@@ -45,6 +47,9 @@ public:
 
 	int cameraX;
 	int cameraY;
+	
+	int posX;
+	int posY;
 
 	// 미니맵 포인트 
 	int minimapFrameCout;
@@ -65,6 +70,73 @@ public:
 	virtual void velliCameraMove();
 
 	virtual void minimapUpdate();
+
+	virtual void collision(void);
+
+	// 링 _______________________________________________________________________________________________링
+
+	// 세로
+	enum RINGSTATE
+	{
+		RING_IDLE, RING_EATEN
+	};
+
+	struct tagRing
+	{
+		RECT rc;
+		float x, y, w, h;
+		bool life;
+		bool eaten;
+		bool eat;
+		int eatCount;
+
+		int frameCount;
+		int currentX;
+
+		int eatenFrameCount; // 먹을 때 애니메이션 될 여지를 주기 위한 프레임. 
+		RINGSTATE ringState;
+	};
+	tagRing ring[RINGMAX];
+
+	virtual void ringInit();
+	virtual void ringUpdate();
+	virtual void ringRender();
+	virtual void ringRenderBehind();
+	virtual void ringFrameFunc();
+
+	// 가로
+	enum WRINGSTATE
+	{
+		WRING_IDLE, WRING_EATEN
+	};
+
+	struct WtagRing
+	{
+		RECT rc;
+		float x, y, w, h;
+		bool life;
+		bool eaten;
+		bool eat;
+		int eatCount;
+		int frameCount;
+		int currentX;
+
+		int eatenFrameCount; // 먹을 때 애니메이션 될 여지를 주기 위한 프레임. 
+		WRINGSTATE wringState;
+	};
+	WtagRing wring[RINGMAX];
+
+
+	virtual void WringInit();
+	virtual void WringUpdate();
+	virtual void WringRender();
+	virtual void WringRenderBehind();
+	virtual void WringFrameFunc();
+
+	float sounaX,sounaY;
+	int sounaFrameCount;
+	int sounaCurrentX;
+	bool souna;
 
 	VellieScene();
 	~VellieScene();

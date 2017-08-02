@@ -50,7 +50,7 @@ HRESULT fireLion::init(float x, float y)
 
 	fireFrameCount=0;
 	fireCurrentX=0;
-
+	_enemy.stoned = false;
 	return S_OK;
 }
 
@@ -62,6 +62,8 @@ void fireLion::update(void)
 {
 	int distance = getDistance(_enemy.x, _enemy.y, otus->_player.x, otus->_player.y);
 
+	if (flState != FL_DIE)
+	{
 	//범위에 아직 플레이어가 들어오지 않았다면,
 	if (distance > 100)
 	{
@@ -92,30 +94,38 @@ void fireLion::update(void)
 		flState = FL_WALK;
 	}
 
-	// 만약 사격거리에 들어오면, 
-	if (distance <= 300)
-	{
-		// 플레이어와의 각도를 잡아서... 그 각도로 
-		lionAngle = getAngle(_enemy.x, _enemy.y, otus->_player.x, otus->_player.y);
-		attack = true;
-	}
-
-	if (attack)
-	{
-		// 만약 그 각도면, ,, 
-		flState = FL_0A;
-		// 그 각도의 상태로  그 각도의 불꽃 프레임으로 쏴야함.. 
-		hitRC = RectMakeCenter(_enemy.x,_enemy.y-100,100,50);
-		attackFrameCount++;
-		if (attackFrameCount > 60) // 1초만 때린다. 
+	
+		// 만약 사격거리에 들어오면, 
+		if (distance <= 300)
 		{
-			attackFrameCount = 0;
-			attack = false;
+			// 플레이어와의 각도를 잡아서... 그 각도로 
+			lionAngle = getAngle(_enemy.x, _enemy.y, otus->_player.x, otus->_player.y);
+			attack = true;
+		}
+
+		if (attack)
+		{
+			// 만약 그 각도면, ,, 
+			flState = FL_0A;
+			// 그 각도의 상태로  그 각도의 불꽃 프레임으로 쏴야함.. 
+			hitRC = RectMakeCenter(_enemy.x, _enemy.y - 100, 100, 50);
+			attackFrameCount++;
+			if (attackFrameCount > 60) // 1초만 때린다. 
+			{
+				attackFrameCount = 0;
+				attack = false;
+			}
 		}
 	}
 	
 	frameFunc();
 	fireFrameFunc();
+
+	// 물에 맞으면 
+	if (_enemy.stoned)
+	{
+		flState = FL_DIE;
+	}
 
 	_enemy.rc = RectMakeCenter(_enemy.x, _enemy.y, _enemy.image->getFrameWidth()/2, _enemy.image->getFrameHeight()/3);
 }
@@ -133,7 +143,7 @@ void fireLion::render(void)
 
 	if (attack)
 	{
-		Rectangle(getMemDC(), hitRC.left, hitRC.top, hitRC.right, hitRC.bottom);
+		//Rectangle(getMemDC(), hitRC.left, hitRC.top, hitRC.right, hitRC.bottom);
 		IMAGEMANAGER->findImage("fire16")->frameRender(getMemDC(), _enemy.x-70, _enemy.y - 150, fireCurrentX,0);
 	}
 }

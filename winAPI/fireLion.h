@@ -15,7 +15,7 @@ public:
 	int moveFrameCount;
 	bool moveRight;
 	bool moveLeft;
-
+	bool stoned;
 	FlSTATE flState;
 
 	// 애니메이션

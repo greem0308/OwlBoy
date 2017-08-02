@@ -81,6 +81,7 @@
     <ClInclude Include="actionManager.h" />
     <ClInclude Include="animation.h" />
     <ClInclude Include="bombamanScene.h" />
+    <ClInclude Include="bossBridge.h" />
     <ClInclude Include="BossScene.h" />
     <ClInclude Include="bullets.h" />
     <ClInclude Include="button.h" />
@@ -104,8 +105,13 @@
     <ClInclude Include="frameAnimation.h" />
     <ClInclude Include="frameAnimationManager.h" />
     <ClInclude Include="fruit0.h" />
+    <ClInclude Include="fruit1.h" />
+    <ClInclude Include="fruit2.h" />
+    <ClInclude Include="fruit3.h" />
     <ClInclude Include="gameNode.h" />
     <ClInclude Include="gameStudy.h" />
+    <ClInclude Include="glassObject.h" />
+    <ClInclude Include="glassObject2.h" />
     <ClInclude Include="image.h" />
     <ClInclude Include="imageManager.h" />
     <ClInclude Include="item.h" />
@@ -113,7 +119,9 @@
     <ClInclude Include="keyAnimationManager.h" />
     <ClInclude Include="keyManager.h" />
     <ClInclude Include="labScene.h" />
+    <ClInclude Include="mp3Player.h" />
     <ClInclude Include="otusHouseScene.h" />
+    <ClInclude Include="pixelTestScene.h" />
     <ClInclude Include="player.h" />
     <ClInclude Include="playerEffect.h" />
     <ClInclude Include="progressBar.h" />
@@ -141,6 +149,7 @@
     <ClCompile Include="actionManager.cpp" />
     <ClCompile Include="animation.cpp" />
     <ClCompile Include="bombamanScene.cpp" />
+    <ClCompile Include="bossBridge.cpp" />
     <ClCompile Include="BossScene.cpp" />
     <ClCompile Include="bullets.cpp" />
     <ClCompile Include="button.cpp" />
@@ -163,8 +172,13 @@
     <ClCompile Include="frameAnimation.cpp" />
     <ClCompile Include="frameAnimationManager.cpp" />
     <ClCompile Include="fruit0.cpp" />
+    <ClCompile Include="fruit1.cpp" />
+    <ClCompile Include="fruit2.cpp" />
+    <ClCompile Include="fruit3.cpp" />
     <ClCompile Include="gameNode.cpp" />
     <ClCompile Include="gameStudy.cpp" />
+    <ClCompile Include="glassObject.cpp" />
+    <ClCompile Include="glassObject2.cpp" />
     <ClCompile Include="image.cpp" />
     <ClCompile Include="imageManager.cpp" />
     <ClCompile Include="item.cpp" />
@@ -172,7 +186,9 @@
     <ClCompile Include="keyAnimationManager.cpp" />
     <ClCompile Include="keyManager.cpp" />
     <ClCompile Include="labScene.cpp" />
+    <ClCompile Include="mp3Player.cpp" />
     <ClCompile Include="otusHouseScene.cpp" />
+    <ClCompile Include="pixelTestScene.cpp" />
     <ClCompile Include="player.cpp" />
     <ClCompile Include="playerEffect.cpp" />
     <ClCompile Include="progressBar.cpp" />

@@ -33,6 +33,22 @@ public:
 
 	bool waitbool;
 
+	int efmFrame;
+
+	// effect 
+	struct tagFX
+	{
+		RECT rc;
+		bool fire;
+		int frameCount;
+		int currentX;
+	};
+	tagFX fx0;
+
+	virtual void fx0Init(void);
+	virtual void fx0Update(void);
+	virtual void fx0Render(void);
+
 	virtual HRESULT init(float x, float y);
 	virtual void release(void);
 	virtual void update(void);

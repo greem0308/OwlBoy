@@ -49,6 +49,8 @@ HRESULT shooter::init(float x, float y)
 	attackFrameCount = 0;
 
 	waitbool = true;
+
+	fx0Init();
 	return S_OK;
 }
 
@@ -59,8 +61,9 @@ void shooter::release(void)
 
 void shooter::update(void)
 {
+	fx0Update();
 	_enemy._bullet2->update();
-
+	
 	RECT rcTemp;
 
 	_enemy.angle = getAngle(_enemy.x,_enemy.y, otus->_player.x, otus->_player.y);
@@ -139,6 +142,7 @@ void shooter::update(void)
 			//PostQuitMessage(0);
 			_enemy.HP -= 1;
 			shooterState = SHOOTER_DIE;
+			otus->se7 = true;
 			_enemy.hitCheck = false;
 		}
 	}
@@ -147,10 +151,26 @@ void shooter::update(void)
 	{
 		_enemy.HP = 0;
 		shooterState = SHOOTER_DIE;
-		_enemy.life = false;
+		fx0.fire = true;
 	}
+	
+	if (fx0.fire)
+	{
+		fx0.frameCount++;
+		if (fx0.frameCount > 8)
+		{
+			fx0.frameCount = 0;
+			fx0.currentX++;
+			if (fx0.currentX > 14)
+			{
+				fx0.currentX = 0;
+				fx0.fire = false;
+				_enemy.life = false;
+			}
+		}
+	}
+	
 	_enemy.rc = RectMakeCenter(_enemy.x, _enemy.y, _enemy.image->getFrameWidth()/3, _enemy.image->getFrameHeight()/2);
-
 }
 
 void shooter::render(void)
@@ -165,6 +185,8 @@ void shooter::render(void)
 	{
 		IMAGEMANAGER->findImage("shooterLeft")->frameRender(getMemDC(), _enemy.x - 80, _enemy.y - 70, currentX, shooterState);
 	}
+
+	fx0Render();
 
 	frameCount++;
 	switch (shooterState)
@@ -227,5 +249,44 @@ void shooter::render(void)
 		break;
 	default:
 		break;
+	}
+}
+
+
+
+void shooter::fx0Init(void)
+{
+	IMAGEMANAGER->addFrameImage("explosionEffect1","effect/explosionEffect1.bmp",1872,128,18,1,true,RGB(255,0,255));
+	
+	fx0.frameCount = 0;
+	fx0.currentX = 0;
+	fx0.fire = false;
+}
+
+void shooter::fx0Update(void)
+{
+	if (fx0.fire)
+	{
+		fx0.frameCount++;
+		if (fx0.frameCount > 8)
+		{
+			fx0.frameCount = 0;
+			fx0.currentX++;
+			if (fx0.currentX > 17)
+			{
+				fx0.currentX = 0;
+				fx0.fire = false;
+				_enemy.life = false;
+			}
+		}
+	}
+
+}
+
+void shooter::fx0Render(void)
+{
+	if (fx0.fire)
+	{
+		IMAGEMANAGER->findImage("explosionEffect1")->frameRender(getMemDC(), _enemy.x-65, _enemy.y-70, fx0.currentX, 0);
 	}
 }

@@ -82,20 +82,20 @@ void reviver::render(void)
 {
 	IMAGEMANAGER->findImage("reviver")->frameRender(getMemDC(), _cannon.cannonEnd.x-50, _cannon.cannonEnd.y-50, currentX,0);
 
-	HPEN MyPen = CreatePen(PS_SOLID, 2, RGB(255, 0, 0));
-	SelectObject(getMemDC(), MyPen);
-
-	//각도 위치 알려준다. 
-	LineMake(getMemDC(), _enemy.x, _enemy.y,
-		_cannon.cannonEnd.x, _cannon.cannonEnd.y);
-	EllipseMakeCenter(getMemDC(), _enemy.x, _enemy.y,
-		_cannon.radius, _cannon.radius);
-
-	char str[256];
-	sprintf(str, "%0.2f", _enemy.angle);
-	TextOut(getMemDC(),570, 38, str, strlen(str));
-
-	DeleteObject(MyPen);
+	//HPEN MyPen = CreatePen(PS_SOLID, 2, RGB(255, 0, 0));
+	//SelectObject(getMemDC(), MyPen);
+	//
+	//////각도 위치 알려준다. 
+	////LineMake(getMemDC(), _enemy.x, _enemy.y,
+	////	_cannon.cannonEnd.x, _cannon.cannonEnd.y);
+	////EllipseMakeCenter(getMemDC(), _enemy.x, _enemy.y,
+	////	_cannon.radius, _cannon.radius);
+	////
+	////char str[256];
+	////sprintf(str, "%0.2f", _enemy.angle);
+	////TextOut(getMemDC(),570, 38, str, strlen(str));
+	//
+	//DeleteObject(MyPen);
 }
 
 void reviver::frameFunc()

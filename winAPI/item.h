@@ -20,6 +20,7 @@ public:
 		int coinUp;
 		int hpUp;
 
+		bool hitCheck; // glassObject 
 		bool life;
 
 		//for jump, gravity___________________________

@@ -38,6 +38,11 @@ HRESULT fruit0::init(float x, float y)
 
 	fruit0eat = false;
 	eatFrame = 0;
+	gravityOpen = false;
+
+	holdFrame = 0;
+	holdCount = 0;
+	hold = false;
 	return S_OK;
 }
 
@@ -49,35 +54,50 @@ void fruit0::update(void)
 {
 	if (tem.life)
 	{
-	// 카메라때매 계속 그려줘야 됨. 
-	tem.rc = RectMakeCenter(tem.x, tem.y, tem.image->getFrameWidth(), tem.image->getFrameHeight());
+		// 카메라때매 계속 그려줘야 됨. 
+		tem.rc = RectMakeCenter(tem.x, tem.y, tem.image->getFrameWidth(), tem.image->getFrameHeight());
 
-	PixelCollision();
-	CastFunc();
-	CurveLineFunc();
+		PixelCollision();
+		CastFunc();
+		CurveLineFunc();
 
-	RECT tempRC;
-	if (IntersectRect(&tempRC, &otus->_player.rc, &tem.rc))
-	{
-		if (KEYMANAGER->isOnceKeyDown('9'))
+		RECT tempRC;
+
+		if (IntersectRect(&tempRC, &otus->_player.rc, &tem.rc))
 		{
-			follow = true;
-			otus->_player.state = FLYHOLD; // 들어는 오는데 바로 플레이어 상태에서 바꾸고 있어서...
-		}
-	}
+			if (KEYMANAGER->isOnceKeyDown('9'))
+			{
+				hold = true;
+				otus->_player.state = FLYHOLD; // 들어는 오는데 바로 플레이어 상태에서 바꾸고 있어서...
+			}
 
-	if (follow)
-	{
-		if (KEYMANAGER->isOnceKeyDown(MK_LBUTTON))
-		{
-			fruit0eat = true;
-			DATABASE->getElementData("player")->currentHP += 5;
-			//otus->_player.currentHP += 5; // 요건 적용이 안됨.
+			if (hold)
+			{
+				if (KEYMANAGER->isOnceKeyDown(VK_UP))
+				{
+					holdCount += 1;
+					tem.y -= 5;
+					if (holdCount >= 2)
+					{
+						follow = true;
+					}
+				}
+			}
 		}
-	}
+
+
+		if (follow)
+		{
+			if (KEYMANAGER->isOnceKeyDown(MK_LBUTTON))
+			{
+				fruit0eat = true;
+				DATABASE->getElementData("player")->currentHP += 5;
+				//otus->_player.currentHP += 5; // 요건 적용이 안됨.
+			}
+		}
 	}//life
 
-	eat();    
+	eat();
 }
 
 void fruit0::render(void)
@@ -85,8 +105,8 @@ void fruit0::render(void)
 	if (tem.life)
 	{
 		// item rc
-		Rectangle(getMemDC(), tem.rc.left, tem.rc.top, tem.rc.right, tem.rc.bottom);
-		tem.image->frameRender(getMemDC(), tem.rc.left, tem.rc.top); 
+	//	Rectangle(getMemDC(), tem.rc.left, tem.rc.top, tem.rc.right, tem.rc.bottom);
+		tem.image->frameRender(getMemDC(), tem.rc.left, tem.rc.top);
 
 		// 던질때 커브 원형들 그리기.
 		if (showCurve)
@@ -97,20 +117,27 @@ void fruit0::render(void)
 			}
 		}
 	}//life
+
 }
 
 void fruit0::PixelCollision(void)
 {
-		if (follow)
+	if (follow)
+	{
+		//tem.state = FLYHOLD;
+		tem.x = otus->_player.x;
+		tem.y = otus->_player.y + 40;
+		tem.ground = false;
+		if (holdCount >= 2)
 		{
-			//tem.state = FLYHOLD;
-			tem.x = otus->_player.x;
-			tem.y = otus->_player.y + 70;
-			tem.ground = false;
+			gravityOpen = true;
 		}
-		// mouse angle  
-		// 여기까지가 게디펑션.
+	}
+	// mouse angle  
+	// 여기까지가 게디펑션.
 
+	if (gravityOpen)
+	{
 		//땅에있지도 않고 점프상태도 아니면, 떨어진다. 
 		if (!tem.ground && !follow)
 		{
@@ -143,6 +170,7 @@ void fruit0::PixelCollision(void)
 				break;
 			}
 		}
+	}//gravityOpen
 
 }//func
 
@@ -152,7 +180,7 @@ void fruit0::CastFunc()
 	if (follow)
 	{
 		if (KEYMANAGER->isOnceKeyUp(MK_RBUTTON))
-		{		
+		{
 			cast = true;
 			showCurve = false;
 			follow = false;
@@ -161,13 +189,16 @@ void fruit0::CastFunc()
 		}
 	}
 
-	if (cast)
+	if (gravityOpen)
 	{
-		castGravity += 0.5f;
-		tem.gravity = 0;
-		tem.groundgrv = 0;
-		tem.x += cosf(tem.angle) *  tem.speed;
-		tem.y += -sinf(tem.angle) * tem.speed + castGravity;
+		if (cast)
+		{
+			castGravity += 0.5f;
+			tem.gravity = 0;
+			tem.groundgrv = 0;
+			tem.x += cosf(tem.angle) *  tem.speed;
+			tem.y += -sinf(tem.angle) * tem.speed + castGravity;
+		}
 	}
 	if (tem.ground)
 	{
@@ -221,7 +252,7 @@ void fruit0::eat()
 	if (fruit0eat)
 	{
 		otus->_player.state = FLYEAT;
-	
+
 		//DATABASE->getElementData
 		eatFrame++;
 		if (otus->_player.direction == RIGHT)

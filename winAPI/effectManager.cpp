@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "effectManager.h"
+#include "effect.h"
 
 
 effectManager::effectManager()
@@ -44,7 +45,7 @@ void effectManager::render(void)
 
 void effectManager::setPlayerEffect(float x, float y)
 {
-	effect* _playerEffect = new playerEffect;
+	playerEffect* _playerEffect = new playerEffect;
 	_playerEffect->init(x, y);
 	_vMinion.push_back(_playerEffect);
 }

@@ -22,7 +22,7 @@ HRESULT playerEffect::init(float x, float y)
 	fx.rc = RectMakeCenter(fx.x, fx.y, fx.image->getFrameWidth(), fx.image->getFrameHeight());
 	fx.life = true;
 
-	KEYANIMANAGER->addCoordinateFrameAnimation("effectStart", "bulletEffect", 0, 9, 10, false, false);
+	KEYANIMANAGER->addCoordinateFrameAnimation("effectStart", "bulletEffect", 0, 9, 5, false, false);
 	
 	fx.currentAni = KEYANIMANAGER->findAnimation("effectStart");
 	fx.currentAni->start();
@@ -37,23 +37,30 @@ void playerEffect::release(void)
 
 void playerEffect::update(void)
 {
-
 	//만약 애니메이션이 끝나면, 멈춰라. 
-	//if (fx.image->getFrameX() < fx.image->getMaxFrameX())
-	//{
-	////	PostQuitMessage(0);
-	//	fx.life = false;
-	//}
+	if (fx.image->getFrameX() < fx.image->getMaxFrameX())
+	{
+	//	PostQuitMessage(0);
+		fx.life = false;
+	}
 
 	//frame++;
-	//if (frame >300)
+	//if (frame >30)
 	//{
 	//	fx.life = false;
 	//	frame = 0;
 	//}
+
+	if (!fx.life)
+	{
+		fx.rc = RectMakeCenter(fx.x + 10000, fx.y+10000, fx.image->getFrameWidth(), fx.image->getFrameHeight());
+	}
+
+	KEYANIMANAGER->update();
 }
 
 void playerEffect::render(void)
 {
+	if(fx.life)
 	fx.image->aniRender(getMemDC(), fx.rc.left, fx.rc.top, fx.currentAni);
 }

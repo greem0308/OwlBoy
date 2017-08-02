@@ -12,8 +12,8 @@
 #pragma comment (lib, "lib/fmodex_vc.lib")
 
 //채널 갯수 (버퍼~!!!)
-#define EXTRACHANNLEBUFFER 5
-#define SOUNDBUFFER 10
+#define EXTRACHANNLEBUFFER 100
+#define SOUNDBUFFER 100
 
 //총 사운드 갯수
 #define TOTALSOUNDBUFFER (EXTRACHANNLEBUFFER + SOUNDBUFFER)
@@ -49,13 +49,12 @@ public:
 	bool isPause(string keyName);
 	bool isPlay(string keyName);
 
-	//음악 길이값 가져옴.
+	float getVolume(string keyName);
+	void setVolume(string keyName, float volume);
+
+	unsigned int getTotalLength(string keyName);
 	unsigned int getLength(string keyName);
-
-	//음악 재생 위치 설정
-	void setPosition(string keyName, unsigned int ms);
-	unsigned int getPosition(string keyName);
-
+	void setLength(string keyName, unsigned int Length);
 	//fmod 시스템 갱신한다
 	void update(void);
 

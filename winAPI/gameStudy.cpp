@@ -21,6 +21,9 @@ HRESULT gameStudy::init(void)
 
 	//씬 생성 
 	SCENEMANAGER->addScene("test", new test);
+	SCENEMANAGER->addScene("collisionTestScene", new collisionTestScene);
+	SCENEMANAGER->addScene("pixelTestScene", new pixelTestScene);
+
 	SCENEMANAGER->addScene("startScene", new startScene);
 	SCENEMANAGER->addScene("otusHouseScene", new otusHouseScene);
 	SCENEMANAGER->addScene("VellieScene", new VellieScene);
@@ -31,13 +34,10 @@ HRESULT gameStudy::init(void)
 	SCENEMANAGER->addScene("eventScene", new eventScene);
 	SCENEMANAGER->addScene("dungeonScene", new dungeonScene);
 	SCENEMANAGER->addScene("BossScene", new BossScene);
-	SCENEMANAGER->addScene("collisionTestScene", new collisionTestScene);
-
+	SCENEMANAGER->addScene("bossBridge", new bossBridge);
+	
 	//현재 씬을 _sceneOne으로 설정
-	SCENEMANAGER->changeScene("dungeonScene");
-
-	//_velli = new VellieScene;
-	//_velli->init();
+	SCENEMANAGER->changeScene("otusHouseScene");
 	
 	arrowFrameCount = 0;
 	arrowCurrentX=0;
@@ -48,7 +48,7 @@ HRESULT gameStudy::init(void)
 
 	SetCursor(NULL);
 	ShowCursor(FALSE);
-	
+
 	return S_OK;
 }
 
@@ -71,7 +71,7 @@ void gameStudy::render(void)
 	IMAGEMANAGER->findImage("mapImage")->render(getMemDC());
 	SCENEMANAGER->render();
 	//_velli->render();
-	TIMEMANAGER->render(getMemDC());
+	//TIMEMANAGER->render(getMemDC());
 
 	IMAGEMANAGER->findImage("arrow")->frameRender(getMemDC(), _ptMouse.x, _ptMouse.y,arrowCurrentX,arrowCurrentY);
 

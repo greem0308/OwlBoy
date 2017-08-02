@@ -6,7 +6,6 @@
 class eventScene : public gameNode
 {
 public:
-
 	player* _player;
 	enemyManager* _em;
 	int shipShowFrame; // 한번만 나타나게 하는 조건.

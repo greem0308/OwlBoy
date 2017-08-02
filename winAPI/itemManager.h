@@ -1,7 +1,12 @@
 #pragma once
 #include "gameNode.h"
-#include "fruit0.h"
 #include "player.h"
+#include "fruit0.h"
+#include "fruit1.h"
+#include "fruit2.h"
+#include "fruit3.h"
+#include "glassObject.h"
+#include "glassObject2.h"
 
 class item;
 
@@ -25,6 +30,11 @@ public:
 
 	// enemy
 	virtual void setFruit0(float x, float y);
+	virtual void setFruit1(float x, float y);
+	virtual void setFruit2(float x, float y);
+	virtual void setFruit3(float x, float y);
+	virtual void setGlassObject(float x, float y);
+	virtual void setGlassObject2(float x, float y);
 
 	virtual vector<item*> getItem(void) { return _vItem; }
 	virtual void setPlayer(player* _player) { otus = _player; }

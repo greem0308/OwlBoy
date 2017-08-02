@@ -48,6 +48,7 @@ HRESULT eventScene::init(void)
 	_player->init(3037,2222);
 	_player->miniX = 3037;
 	_player->miniY = 2222;
+	_player->playNum = 4;
 
 	cameraX = 0;
 	cameraY = 0;
@@ -130,6 +131,13 @@ void eventScene::update(void)
 
 void eventScene::render(void)
 {
+	// 뒤에 픽셀배경들 안되게끔.
+	IMAGEMANAGER->findImage("mapImage")->render(getMemDC()); // 원래
+	IMAGEMANAGER->findImage("mapImage")->render(getPixel()); // 핑크
+	IMAGEMANAGER->findImage("mapImage")->render(getPixelBlue()); // 블루
+	IMAGEMANAGER->findImage("mapImage")->render(getPixelGreen()); // 그린
+	IMAGEMANAGER->findImage("mapImage")->render(getPixelYellow()); // 옐로우
+
 	RECT cloudRC = RectMake(cloudX, cloudY, 3840, 2880);
 	RECT loopRC = RectMake(_player->_player.x - WINSIZEX / 2, _player->_player.y - WINSIZEY / 2 - 50, WINSIZEX, WINSIZEY + 80);
 
@@ -155,15 +163,17 @@ void eventScene::render(void)
 
 	IMAGEMANAGER->findImage("miniMap")->render(getMemDC());
 
-	_player->render();
+	
 
 	//문 렉트 
 	for (int i = 0; i < 7; i++)
 	{
-		Rectangle(getMemDC(), door[i].rc.left, door[i].rc.top, door[i].rc.right, door[i].rc.bottom);
+		//Rectangle(getMemDC(), door[i].rc.left, door[i].rc.top, door[i].rc.right, door[i].rc.bottom);
 	}
 
 	_em->render();
+
+	_player->render();
 
 	// minimap Render
 	IMAGEMANAGER->findImage("miniMap")->render(getMemDC(), 0, 0);
@@ -195,6 +205,7 @@ void eventScene::velliCameraMove()
 		{
 			door[i].x -= _player->_player.x - WINSIZEX / 2;
 		}
+
 		// 이위치는 지정된 extern위치를 플레이어에 넣는데 카메라가 적용되야지 정상이여서 넣음. 
 		DoorPos[toVellieDoor].x -= _player->_player.x - WINSIZEX / 2;
 
@@ -203,17 +214,26 @@ void eventScene::velliCameraMove()
 		// enemyShip
 		for (int i = 0; i < _em->getMinion().size(); ++i)
 		{
-			_em->getMinion()[i]->_enemy.x -= _player->_player.x - WINSIZEX / 2;
+			 _em->getMinion()[i]->_enemy.x -= _player->_player.x - WINSIZEX / 2;
+			 
+			for (int j = 0; j < _em->getMinion()[i]->_enemy._bullet->getVBullet().size(); j++)
+			{
+				if(_em->getMinion()[i]->_enemy._bullet->getVBullet()[j].fire)
+				{
+					_em->getMinion()[i]->_enemy._bullet->getVBullet()[j].x -= _player->_player.x - WINSIZEX / 2;	
+				}
+			}
 		}
 
 		// enemyShip Bullet
-		for (int i = 0; i < _em->getMinion().size(); ++i)
-		{
-			for (int j = 0; j < _em->getMinion()[i]->_enemy._bullet->getVBullet().size(); j++)
-			{
-				_em->getMinion()[i]->_enemy._bullet->getVBullet()[j].x -= _player->_player.x - WINSIZEX / 2;
-			}
-		}
+		//for (int i = 0; i < _em->getMinion().size(); ++i)
+		//{
+		//	for (int j = 0; j < _em->getMinion()[i]->_enemy._bullet->getVBullet().size(); j++)
+		//	{
+		//		// 안 들어옴. 
+		//		_em->getMinion()[i]->_enemy._bullet->getVBullet()[j].x -= _player->_player.x - WINSIZEX / 2;
+		//	}
+		//}
 
 		_player->_player.x = WINSIZEX / 2;
 	}
@@ -237,16 +257,25 @@ void eventScene::velliCameraMove()
 		for (int i = 0; i < _em->getMinion().size(); ++i)
 		{
 			_em->getMinion()[i]->_enemy.x += WINSIZEX / 2 - _player->_player.x;
-		}
 
-		// enemyShip Bullet
-		for (int i = 0; i < _em->getMinion().size(); ++i)
-		{
 			for (int j = 0; j < _em->getMinion()[i]->_enemy._bullet->getVBullet().size(); j++)
 			{
-				_em->getMinion()[i]->_enemy._bullet->getVBullet()[j].x += WINSIZEX / 2 - _player->_player.x;
+				if (_em->getMinion()[i]->_enemy._bullet->getVBullet()[j].fire)
+				{
+					_em->getMinion()[i]->_enemy._bullet->getVBullet()[j].x += WINSIZEX / 2 - _player->_player.x;
+					//break;
+				}
 			}
-		}
+		}//for
+
+		//// enemyShip Bullet
+		//for (int i = 0; i < _em->getMinion().size(); ++i)
+		//{
+		//	for (int j = 0; j < _em->getMinion()[i]->_enemy._bullet->getVBullet().size(); j++)
+		//	{
+		//		_em->getMinion()[i]->_enemy._bullet->getVBullet()[j].x += WINSIZEX / 2 - _player->_player.x;
+		//	}
+		//}
 
 		_player->_player.x = WINSIZEX / 2;
 	}
@@ -265,20 +294,29 @@ void eventScene::velliCameraMove()
 
 		cloudY -= _player->_player.y - WINSIZEY / 2;
 
-		// enemyShip
+		// enemyShip 
 		for (int i = 0; i < _em->getMinion().size(); ++i)
 		{
 			_em->getMinion()[i]->_enemy.y -= _player->_player.y - WINSIZEY / 2;
-		}
 
-		// enemyShip Bullet
-		for (int i = 0; i < _em->getMinion().size(); ++i)
-		{
 			for (int j = 0; j < _em->getMinion()[i]->_enemy._bullet->getVBullet().size(); j++)
 			{
-				_em->getMinion()[i]->_enemy._bullet->getVBullet()[j].y -= _player->_player.y - WINSIZEY / 2;
+				if (_em->getMinion()[i]->_enemy._bullet->getVBullet()[j].fire)
+				{
+					_em->getMinion()[i]->_enemy._bullet->getVBullet()[j].y -= _player->_player.y - WINSIZEY / 2;
+					//break;
+				}
 			}
 		}
+
+		//// enemyShip Bullet
+		//for (int i = 0; i < _em->getMinion().size(); ++i)
+		//{
+		//	for (int j = 0; j < _em->getMinion()[i]->_enemy._bullet->getVBullet().size(); j++)
+		//	{
+		//		_em->getMinion()[i]->_enemy._bullet->getVBullet()[j].y -= _player->_player.y - WINSIZEY / 2;
+		//	}
+		//}
 
 		_player->_player.y = WINSIZEY / 2;
 	}
@@ -300,16 +338,25 @@ void eventScene::velliCameraMove()
 		for (int i = 0; i < _em->getMinion().size(); ++i)
 		{
 			_em->getMinion()[i]->_enemy.y += WINSIZEY / 2 - _player->_player.y;
+
+			for (int j = 0; j < _em->getMinion()[i]->_enemy._bullet->getVBullet().size(); j++)
+			{
+				if (_em->getMinion()[i]->_enemy._bullet->getVBullet()[j].fire)
+				{
+					_em->getMinion()[i]->_enemy._bullet->getVBullet()[j].y += WINSIZEY / 2 - _player->_player.y;
+					//break;
+				}
+			}
 		}
 
 		// enemyShip Bullet
-		for (int i = 0; i < _em->getMinion().size(); ++i)
-		{
-			for (int j = 0; j < _em->getMinion()[i]->_enemy._bullet->getVBullet().size(); j++)
-			{
-				_em->getMinion()[i]->_enemy._bullet->getVBullet()[j].y += WINSIZEY / 2 - _player->_player.y;
-			}
-		}
+		//for (int i = 0; i < _em->getMinion().size(); ++i)
+		//{
+		//	for (int j = 0; j < _em->getMinion()[i]->_enemy._bullet->getVBullet().size(); j++)
+		//	{
+		//		_em->getMinion()[i]->_enemy._bullet->getVBullet()[j].y += WINSIZEY / 2 - _player->_player.y;
+		//	}
+		//}
 
 		DoorPos[toVellieDoor].y += WINSIZEY / 2 - _player->_player.y;
 
@@ -433,9 +480,7 @@ void eventScene::Create(int Num)
 		_em->setEventShip(3815 - 3037,1025 - 2222);
 		_em->setEventShip(2463 - 3037,1150 - 2222);
 		_em->setEventShip(1539 - 3037,1687 - 2222);
-		//em->setEventShip(2335,2092);
 		_em->setEventShip(3505 - 3037,2767 - 2222);
-
 		_em->setEventShip(813 - 3037,2595 - 2222);
 
 		// right

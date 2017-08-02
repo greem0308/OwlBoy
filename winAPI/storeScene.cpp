@@ -18,7 +18,10 @@ HRESULT storeScene::init(void)
 	IMAGEMANAGER->addImage("storeFront", "Scene/storeFront.bmp", 1280, 720, true, RGB(255, 0, 255));
 
 	backgroundPink = IMAGEMANAGER->addImage("storePixelPink", "Scene/storePixelPink.bmp", 1280, 720, false);
-	
+	IMAGEMANAGER->addImage("storeBG_blue", "Scene/storeBG_blue.bmp", 1280, 720, false);
+	IMAGEMANAGER->addImage("storeBG_green", "Scene/storeBG_green.bmp", 1280, 720, false);
+	IMAGEMANAGER->addImage("storeBG_yellow", "Scene/storeBG_yellow.bmp", 1280, 720, false);
+
 	IMAGEMANAGER->addImage("storeItem1","UI/storeItem1.bmp",1280,720,true,RGB(255,0,255));
 	IMAGEMANAGER->addImage("storeItem2", "UI/storeItem2.bmp", 1280, 720, true, RGB(255, 0, 255));
 	IMAGEMANAGER->addImage("storeItem3", "UI/storeItem3.bmp", 1280, 720, true, RGB(255, 0, 255));
@@ -29,7 +32,10 @@ HRESULT storeScene::init(void)
 
 
 	_player = new player;
-	_player->init(400, 200);
+	_player->init(280,400);
+	_player->playNum = 3;
+	_player->geddy.x = 290;
+	_player->geddy.y = 400;
 
 	frameCount = 0;
 	CurrentX = 0;
@@ -148,13 +154,20 @@ void storeScene::update(void)
 
 void storeScene::render(void)
 {
-	IMAGEMANAGER->findImage("mapImage")->render(getPixel()); // 뒤에 픽셀배경들 안되게끔.
-	IMAGEMANAGER->findImage("mapImage")->render(getMemDC()); // 뒤에 픽셀배경들 안되게끔.
+	// 뒤에 픽셀배경들 안되게끔.
+	IMAGEMANAGER->findImage("mapImage")->render(getMemDC()); // 원래
+	IMAGEMANAGER->findImage("mapImage")->render(getPixel()); // 핑크
+	IMAGEMANAGER->findImage("mapImage")->render(getPixelBlue()); // 블루
+	IMAGEMANAGER->findImage("mapImage")->render(getPixelGreen()); // 그린
+	IMAGEMANAGER->findImage("mapImage")->render(getPixelYellow()); // 옐로우
 
-	IMAGEMANAGER->findImage("storePixelPink")->render(getPixel()); // 분홍.
+	IMAGEMANAGER->findImage("storePixelPink")->render(getPixel()); // 분홍													
+	IMAGEMANAGER->findImage("storeBG_blue")->render(getPixelBlue());
+	IMAGEMANAGER->findImage("storeBG_green")->render(getPixelGreen());
+	IMAGEMANAGER->findImage("storeBG_yellow")->render(getPixelYellow());
 
 	IMAGEMANAGER->findImage("storeBG")->render(getMemDC(), 0, 0); // 배경. 
-	Rectangle(getMemDC(), NPCrc.left, NPCrc.top, NPCrc.right, NPCrc.bottom);
+	//Rectangle(getMemDC(), NPCrc.left, NPCrc.top, NPCrc.right, NPCrc.bottom);
 	IMAGEMANAGER->findImage("storeNPC")->frameRender(getMemDC(), 495, 325, NPCcurrentX, 0);
 	IMAGEMANAGER->findImage("storeFront")->render(getMemDC(), 0, 0); // 배경. 
 	if (storeWindow)
@@ -178,7 +191,7 @@ void storeScene::render(void)
 
 	_player->render();
 
-	Rectangle(getMemDC(), rc.left, rc.top, rc.right, rc.bottom);
+	//Rectangle(getMemDC(), rc.left, rc.top, rc.right, rc.bottom);
 }
 
 //사격거리
@@ -190,7 +203,7 @@ void storeScene::cbItem1BuyBtn(void)
 	// 데이터베이스의 플레이어의 스피드가 증가한다. 
 	if (itemCount == 0)
 	{
-		DATABASE->getElementData("player")->shootSpeed = 5.2f;
+		DATABASE->getElementData("player")->shootSpeed = 8.0f;
 		DATABASE->getElementData("player")->inventoryOpen = 1; //인벤토리를 자동으로 연다. 
 		DATABASE->getElementData("player")->coin -= 300;
 	}
@@ -206,9 +219,6 @@ void storeScene::cbItem1BuyBtn(void)
 		DATABASE->getElementData("player")->speed = 5.0f;
 		DATABASE->getElementData("player")->inventoryOpen = 1;
 		DATABASE->getElementData("player")->coin -= 100;
-
-	}
-	
-
+	}	
 }
 

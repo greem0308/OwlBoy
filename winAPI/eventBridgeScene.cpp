@@ -33,6 +33,9 @@ HRESULT eventBridgeScene::init(void)
 
 	_player = new player;
 	_player->init(30, 450);
+	_player->playNum = 8;
+	_player->geddy.x = 40;
+	_player->geddy.y = 450;
 
 	monk_frameCount = 0;
 	monk_CurrentX = 0;
@@ -116,15 +119,17 @@ void eventBridgeScene::update(void)
 		}
 	}
 
-
-	eventFunc();
-    
+	eventFunc();    
 }
 
 void eventBridgeScene::render(void)
 {
-	IMAGEMANAGER->findImage("mapImage")->render(getPixel()); // 뒤에 픽셀배경들 안되게끔.
-	IMAGEMANAGER->findImage("mapImage")->render(getMemDC());
+	// 뒤에 픽셀배경들 안되게끔.
+	IMAGEMANAGER->findImage("mapImage")->render(getMemDC()); // 원래
+	IMAGEMANAGER->findImage("mapImage")->render(getPixel()); // 핑크
+	IMAGEMANAGER->findImage("mapImage")->render(getPixelBlue()); // 블루
+	IMAGEMANAGER->findImage("mapImage")->render(getPixelGreen()); // 그린
+	IMAGEMANAGER->findImage("mapImage")->render(getPixelYellow()); // 옐로우
 
 	IMAGEMANAGER->findImage("PixelPink")->render(getPixel()); // 분홍.
 
@@ -144,7 +149,7 @@ void eventBridgeScene::render(void)
 
 	_player->render();
 
-	Rectangle(getMemDC(), rc.left, rc.top, rc.right, rc.bottom);
+	//Rectangle(getMemDC(), rc.left, rc.top, rc.right, rc.bottom);
 
 	HBRUSH playerH = CreateSolidBrush(RGB(255, 0, 0));
 	HBRUSH playerM = CreateSolidBrush(RGB(100, 0, 255));
@@ -203,6 +208,10 @@ void eventBridgeScene:: eventFunc(void)
 		// 수도승 톡이 2초간 실해된 후 펄스되고
 		// 이벤트 장치 작동시작. 
 		monkTalkFrame++;
+		if (monkTalkFrame == 119)
+		{
+			_player->se3 = true;
+		}
 		if (monkTalkFrame > 120)
 		{
 			monkTalk = false;

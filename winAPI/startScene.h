@@ -1,12 +1,14 @@
 #pragma once
 #include "gameNode.h"
 #include "button.h"
+#include "player.h"
 
 class startScene : public gameNode
 {
 public:
 	button* startBtn;
-	
+	player* _player;
+
 	// 화면 돌릴때 필요함.
 	enum DIREC
 	{

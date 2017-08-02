@@ -23,6 +23,7 @@ public:
 		int HP;
 		RECT HPbar;
 		RECT rc;
+		bool stoned;
 		image* image;
 		bulletM1* _bullet; // enemyShip
 		bulletM2* _bullet2; // shooter

@@ -19,14 +19,15 @@ public:
 	bool angleReturn; // 처음에 펄스되어있는 불. 
 
 	int playerToShipAngle; // 발견하면 불빛이 따라가는 변수
-	
+	int cannonFrameNum; // 캐논 프레임 앵글.. 
+
 	int lightFollowFrame; // 따라가기전 텀. 
 	
 	RECT lightRC[4];
 
 	int lightFrameNum; // 빛 찾는얘 앵글에 따른 프레임.
 	int lightFrame64; // 빛 프레임 64...
-	int cannonFrameNum; // 캐논 프레임 앵글.. 
+
 
 	// 배 흔들림. 
 	int shipShakeFrame;
@@ -52,6 +53,8 @@ public:
 	int gunCurrentX; // 가로. 즉. 6번..
 	int gunCurrentY; // 여기가 각도에 따라서 선택해야할 y프레임. 
 	
+	float tempX;
+	float tempY;
 
 	virtual HRESULT init(float x, float y);
 	virtual void release(void);
@@ -60,8 +63,6 @@ public:
 
 	virtual void shipShake(void);
 	virtual void shipShoot(void);
-
-
 	virtual void gunFrameFunc(void);
 
 	eventShip();

@@ -372,6 +372,7 @@ void image::render(HDC hdc)
 {
 	if (_tran)
 	{
+
 		GdiTransparentBlt(hdc, //복사할 장소의 DC
 			(int)_imageInfo->x,		//복사될 좌표 시작점 X
 			(int)_imageInfo->y,		//복사될 좌표 시작점 Y
@@ -396,6 +397,7 @@ void image::render(HDC hdc)
 
 void image::render(HDC hdc, int destX, int destY)
 {
+
 	if (_tran)
 	{
 		GdiTransparentBlt(hdc, //복사할 장소의 DC

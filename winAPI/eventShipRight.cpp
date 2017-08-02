@@ -228,6 +228,7 @@ void eventShipRight::shipShoot()
 			if (_cannon.angle >= PI * 2) _cannon.angle -= PI * 2;
 			if (_cannon.shootAngle >= PI * 2) _cannon.shootAngle -= PI * 2;
 			_enemy._bullet->fire(_cannon.shootCenter.x, _cannon.shootCenter.y, _cannon.shootAngle, 10.0f);
+			otus->se4 = true;
 			frameCount = 0;
 			fire = false;
 		}

@@ -13,6 +13,8 @@
 #include "dungeonScene.h"
 #include "BossScene.h"
 #include "collisionTestScene.h"
+#include "bossBridge.h"
+#include "pixelTestScene.h"
 
 enum
 {

@@ -15,7 +15,6 @@ HRESULT effect::init(float x, float y)
 {
 	gameNode::init();
 
-
 	return S_OK;
 }
 

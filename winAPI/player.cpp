@@ -15,7 +15,7 @@ HRESULT player::init(float x, float y)
 	gameNode::init();
 	//sound ____________________________________________________________________________________________
 	soundInit();
-
+	soundInit1();
 	//inventory____________________________________________________________________________________________
 	invenInit();
 
@@ -39,6 +39,12 @@ HRESULT player::init(float x, float y)
 	IMAGEMANAGER->addImage("hp", "UI/hp.bmp",85,17, true, RGB(255, 0, 255));
 	IMAGEMANAGER->addImage("maxHP", "UI/maxHP.bmp", 85, 17, true, RGB(255, 0, 255));
 	IMAGEMANAGER->addImage("hpBar", "UI/hpBar.bmp", 140, 50, true, RGB(255, 0, 255));
+
+	// curve Point
+	IMAGEMANAGER->addImage("curvePoint", "player/curvePoint.bmp",8,8, true, RGB(255, 0, 255));
+
+	// coin icon
+	IMAGEMANAGER->addImage("coinIcon", "UI/coinIcon.bmp",15*1.8,17 * 1.8, true, RGB(255, 0, 255));
 
 	// player __________________________________________________________________________________________________________
 	_player.x = x;
@@ -74,7 +80,7 @@ HRESULT player::init(float x, float y)
 	_player.shootCurrentY = 0;
 
 	_player._fire = new missileM1;
-	_player._fire->init(10, 500);
+	_player._fire->init(10, 350);
 
 	// 총은 플레이어에서 쏘고, 게디 잡을때의 렉트가 필요해서 구조체를 생성하였음.
 	// geddy __________________________________________________________________________________________________________
@@ -108,7 +114,12 @@ HRESULT player::init(float x, float y)
 	miniX = 0;
 	miniY = 0; 
 
-return S_OK;
+	//effectInit();
+
+	//_mp3Player = new mp3Player;
+	//_mp3Player->init();
+
+    return S_OK;
 }
 
 void player::release(void)
@@ -123,6 +134,7 @@ void player::update(void)
 	soundBtn->update();
 	inventoryBtn->update();
 	KEYANIMANAGER->update();
+	//_mp3Player->update();
 
 	// 마우스 애니메이션을 위한 기능.
 	if(!geddy.follow) mouseGun = false;
@@ -138,13 +150,13 @@ void player::update(void)
 	geddy.rc = RectMakeCenter(geddy.x, geddy.y, geddy.radius * 2, geddy.radius * 2);
 	geddy.gunRC = RectMakeCenter(geddy.gunX, geddy.gunY, geddy.gunRadius * 2, geddy.gunRadius * 2);
 
-	//player ___________________________________________
+	//player ___________________________________________________________________
 	keyControl();
 	jump();
 	PixelCollision();
 	frameFunc();
 
-	//geddy ___________________________________________
+	//geddy _____________________________________________________________________
 	geddyFunc(); //게디 팔든 프레임, 총쏨. 
 	geddyPixelCollision();
 	geddyFrameFunc(); // 게디 몸 프레임. 
@@ -153,7 +165,11 @@ void player::update(void)
 
 	//sound_inven_________________________________________________________________
 	soundUpdate();
+	soundUpdate1();
+
 	invenUpdate();
+
+	//effectUpdate();
 
 	if (_player.currentHP > _player.maxHP)
 	{
@@ -170,13 +186,20 @@ void player::update(void)
 
 	// hpBar 현재치, 최대치.
 	_hpBar->setGuage(_player.currentHP,_player.maxHP);
+
+	//gunPixelCollision();
 }
 
 void player::render(void)
 {
-	Rectangle(getMemDC(),_player.rc.left, _player.rc.top, _player.rc.right, _player.rc.bottom);
-	Rectangle(getMemDC(), geddy.rc.left, geddy.rc.top, geddy.rc.right, geddy.rc.bottom);
-	Rectangle(getMemDC(), geddy.gunRC.left, geddy.gunRC.top, geddy.gunRC.right, geddy.gunRC.bottom);
+	//Rectangle(getMemDC(),_player.rc.left, _player.rc.top, _player.rc.right, _player.rc.bottom);
+	//Rectangle(getMemDC(), geddy.rc.left, geddy.rc.top, geddy.rc.right, geddy.rc.bottom);
+	//Rectangle(getMemDC(), geddy.gunRC.left, geddy.gunRC.top, geddy.gunRC.right, geddy.gunRC.bottom);
+	//_mp3Player->render();
+
+	_player._fire->render();
+
+	//effectRender();
 
 	if (_player.direction == RIGHT)
 	{
@@ -192,14 +215,13 @@ void player::render(void)
 
 	IMAGEMANAGER->findImage("armGun")->frameRender(getMemDC(), geddy.rc.left - 50, geddy.rc.top-40, geddy.gunFrameX, _player.shootCurrentY);
 
-
 	//hp
 	IMAGEMANAGER->findImage("hpBar")->render(getMemDC(), 20, 20);
 	_hpBar->render();
 
-
 	char str[256];
 
+	
 	SetTextAlign(getMemDC(), TA_LEFT);
 	SetBkMode(getMemDC(), TRANSPARENT);
 	SetTextColor(getMemDC(), RGB(255,255,255));
@@ -215,31 +237,32 @@ void player::render(void)
 	sprintf(str, "%d", _player.maxHP);
 	TextOut(getMemDC(), 127, 38, str, strlen(str));
 
+
 	SelectObject(getMemDC(), myFont);
-
 	//coin
-	SetTextColor(getMemDC(), RGB(150,150,150));
-	sprintf(str, "coin : %d", _player.coin);
-	TextOut(getMemDC(), 10, 150, str, strlen(str));
+	SetTextColor(getMemDC(), RGB(250,250,150));
+	sprintf(str, "%d", _player.coin);
+	TextOut(getMemDC(), 70, 84, str, strlen(str));
 
-	//shootArea
-	sprintf(str, "shootSpeed : %0.2f", _player.shootSpeed);
-	TextOut(getMemDC(), 10, 200, str, strlen(str));
-	
-	//speed
-	sprintf(str, "speed : %0.2f", _player.speed);
-	TextOut(getMemDC(), 10, 250, str, strlen(str));
-
-	//x,y
-	sprintf(str, "x: %0.2f", _player.x);
-	TextOut(getMemDC(), 10, 300, str, strlen(str));
-	sprintf(str, "y: %0.2f", _player.y);
-	TextOut(getMemDC(), 130, 300, str, strlen(str));
-
-	sprintf(str, "toVellieDoor %d", toVellieDoor);
-	TextOut(getMemDC(), 10, 350, str, strlen(str));
-	sprintf(str, "startDoor %d", startDoor);
-	TextOut(getMemDC(), 10, 400, str, strlen(str));
+	IMAGEMANAGER->findImage("coinIcon")->render(getMemDC(),25,80);
+	////shootArea
+	//sprintf(str, "shootSpeed : %0.2f", _player.shootSpeed);
+	//TextOut(getMemDC(), 10, 200, str, strlen(str));
+	//
+	////speed
+	//sprintf(str, "speed : %0.2f", _player.speed);
+	//TextOut(getMemDC(), 10, 250, str, strlen(str));
+	//
+	////x,y
+	//sprintf(str, "x: %0.2f", _player.x);
+	//TextOut(getMemDC(), 10, 300, str, strlen(str));
+	//sprintf(str, "y: %0.2f", _player.y);
+	//TextOut(getMemDC(), 130, 300, str, strlen(str));
+	//
+	//sprintf(str, "toVellieDoor %d", toVellieDoor);
+	//TextOut(getMemDC(), 10, 350, str, strlen(str));
+	//sprintf(str, "startDoor %d", startDoor);
+	//TextOut(getMemDC(), 10, 400, str, strlen(str));
 
 
 	// 던질때 커브 원형들 그리기.
@@ -247,21 +270,24 @@ void player::render(void)
 	{
 		for (int i = 0; i < CURVE_CIRCLE_LINE; i++)
 		{
-			Ellipse(getMemDC(), curveLine[i].rc.left, curveLine[i].rc.top, curveLine[i].rc.right, curveLine[i].rc.bottom);
+			IMAGEMANAGER->findImage("curvePoint")->render(getMemDC(), curveLine[i].rc.left, curveLine[i].rc.top);
+			//Ellipse(getMemDC(), curveLine[i].rc.left, curveLine[i].rc.top, curveLine[i].rc.right, curveLine[i].rc.bottom);
 		}
 	}
-	_player._fire->render();
 	
 	soundBtn->render();
 	inventoryBtn->render();
 
 	//sound____inven____________________________________________________________________
 	soundRender();
+	soundRender1();
+
 	invenRender();
 
 	if (inventoryOpen)
 	{
 		//coin
+		SetTextColor(getMemDC(), RGB(50,50,50));
 		sprintf(str, "%d", _player.coin);
 		TextOut(getMemDC(), 540, 280, str, strlen(str));
 	}
@@ -272,11 +298,17 @@ void player::render(void)
 
 void player::keyControl(void)
 {
-	// 땅에서 걸을때, ////////////////////////////////////////////////////////////////////////////////
+	// 땅에서 걸을때, //////////////////////////////////////////////////////////////
+	
+	//////////////////
 	if (!_player.fly)
 	{
 		if (KEYMANAGER->isStayKeyDown(VK_LEFT))
 		{
+			if (blueCollision())
+			{
+				_player.speed = 0;
+			}
 			_player.direction = LEFT;
 			_player.state = RUN;
 			_player.fall = false;
@@ -287,6 +319,10 @@ void player::keyControl(void)
 
 		if (KEYMANAGER->isStayKeyDown(VK_RIGHT))
 		{
+			if (greenCollision())
+			{
+				_player.speed = 0;
+			}
 			_player.direction = RIGHT;
 			_player.state = RUN;
 			_player.fall = false;
@@ -297,6 +333,10 @@ void player::keyControl(void)
 
 		if (KEYMANAGER->isOnceKeyDown(VK_UP))
 		{
+			if (yellowCollision())
+			{
+				_player.speed = 0;
+			}
 			_player.jump = true;
 			_player.state = JUMP;
 			_player.jumpCount++;
@@ -324,9 +364,13 @@ void player::keyControl(void)
 	{
 		if (_player.state != FLYHOLD)
 		{
-			_player.ground = true;
+			//_player.ground = true;
 			if (KEYMANAGER->isStayKeyDown(VK_UP))
 			{
+				if (yellowCollision())
+				{
+					_player.speed = 0;
+				}
 				_player.y -= _player.speed;
 				miniY -= _player.speed;
 				_player.jump = false;
@@ -342,13 +386,22 @@ void player::keyControl(void)
 			{
 				_player.direction = LEFT;	
 				_player.fall = false;
+				if (blueCollision())
+				{
+					_player.speed = 0;
+				}
 				_player.x -= _player.speed;
 				miniX -= _player.speed;
+				_player.state = FLYIDLE;
 			}
 			if (KEYMANAGER->isOnceKeyUp(VK_LEFT)) _player.state = FLYIDLE;
 
 			if (KEYMANAGER->isStayKeyDown(VK_RIGHT))
 			{
+				if (greenCollision())
+				{
+					_player.speed = 0;
+				}
 				_player.direction = RIGHT;
 				_player.fall = false;
 				_player.x += _player.speed;
@@ -376,13 +429,27 @@ void player::keyControl(void)
 
 				if (_player.direction == RIGHT)
 				{
-					_player.x += 5;
-					miniX += 5;
+					if (greenCollision())
+					{
+						_player.speed = 0;
+					}
+					else
+					{
+						_player.x += 5;
+						miniX += 5;
+					}
 				}
 				if (_player.direction == LEFT)
 				{
-					_player.x -= 5;
-					miniX -= 5;
+					if (blueCollision())
+					{
+						_player.speed = 0;
+					}
+					else
+					{
+						_player.x -= 5;
+						miniX -= 5;
+					}
 				}
 			}
 		}
@@ -390,9 +457,13 @@ void player::keyControl(void)
 		// 뭘 들고 있을때 ////////////////////////////////////////////////////////////////////////////////
 		else if (_player.state == FLYHOLD)
 		{
-			_player.ground = true;
+			//_player.ground = true;
 			if (KEYMANAGER->isStayKeyDown(VK_UP))
 			{
+				if (yellowCollision())
+				{
+					_player.speed = 0;
+				}
 				_player.y -= _player.speed;
 				miniY -= _player.speed;
 				_player.jump = false;
@@ -405,13 +476,22 @@ void player::keyControl(void)
 			}
 			if (KEYMANAGER->isStayKeyDown(VK_LEFT))
 			{
+				if (blueCollision())
+				{
+					_player.speed = 0;
+				}
 				_player.direction = LEFT;
 				_player.fall = false;
 				_player.x -= _player.speed;
 				miniX -= _player.speed;
+				_player.state = FLYHOLD;
 			}
 			if (KEYMANAGER->isStayKeyDown(VK_RIGHT))
 			{
+				if (greenCollision())
+				{
+					_player.speed = 0;
+				}
 				_player.direction = RIGHT;
 				_player.fall = false;
 				_player.x += _player.speed;
@@ -434,7 +514,8 @@ void player::keyControl(void)
 	{
 		if (KEYMANAGER->isOnceKeyDown(MK_LBUTTON))
 		{
-			_player._fire->fire(geddy.x + cosf(_player.angle) * 35, geddy.y - sinf(_player.angle) * 35, _player.angle, geddy.gunFrameX, _player.shootSpeed);
+			se1 = true;
+			_player._fire->fire(geddy.x + cosf(_player.angle), geddy.y - sinf(_player.angle), _player.angle, 0, geddy.gunFrameX,_player.shootSpeed);
 			_player.shootState = SHOOT;
 			geddy.geddyState = gSHOOT;
 		}
@@ -450,6 +531,7 @@ void player::keyControl(void)
 
 }
 
+// 아래쪽 담당. 충돌체크 
 void player::PixelCollision(void)
 {
 	if (!_player.jump)   // 점프하지 않았으면  
@@ -477,11 +559,11 @@ void player::PixelCollision(void)
 					_player.fly = false;
 					_player.state = IDLE;
 				}
-				if (_player.jump)
-				{
-					_player.jump = false;
-					_player.state = IDLE;
-				}
+			//	if (_player.jump)
+			//	{
+			//		_player.jump = false;
+			//		_player.state = IDLE;
+			//	}
 				if (_player.fall)
 				{
 					_player.fall = false;
@@ -504,63 +586,103 @@ void player::PixelCollision(void)
 			}
 		}
 
-		// BLUE_pixel____________________________________________________________________________________________________
-		for (int i = _player.x - 50 / 2; i < _player.x + 50 / 2; ++i)
-		{
-			// 만약 플레이어 y값+크기/2 아래 픽셀이 정해진 색이고 && 땅이 아니면
-			if (GetPixel(getPixelBlue(), i, _player.y + 50 / 2 + 5) == RGB(0, 0, 255) && !_player.ground)
-			{
-				_player.ground = true; // 땅이라고 알려줌. 
-				_player.y += _player.groundgrv; // 플레이어y += 땅 그래피티 
+		//// BLUE_pixel____________________________________________________________________________________________________
+		//for (int i = _player.x - 50 / 2; i < _player.x + 50 / 2; ++i)
+		//{
+		//	// 만약 플레이어 y값+크기/2 아래 픽셀이 정해진 색이고 && 땅이 아니면
+		//	if (GetPixel(getPixelBlue(), i, _player.y + 50 / 2 + 5) == RGB(0, 0, 255) && !_player.ground)
+		//	{
+		//		_player.ground = true; // 땅이라고 알려줌. 
+		//		_player.y += _player.groundgrv; // 플레이어y += 땅 그래피티 
 
-				_player.groundgrv = 0;
-				_player.jumpCount = 0;
-				if (_player.fly)
-				{
-					_player.fly = false;
-					_player.state = IDLE;
-				}
-				if (_player.jump)
-				{
-					_player.jump = false;
-					_player.state = IDLE;
-				}
-				if (_player.fall)
-				{
-					_player.fall = false;
-					_player.state = IDLE;
-				}
-			}
-		}
+		//		_player.groundgrv = 0;
+		//		_player.jumpCount = 0;
+		//		if (_player.fly)
+		//		{
+		//			_player.fly = false;
+		//			_player.state = IDLE;
+		//		}
+		//		//if (_player.jump)
+		//		//{
+		//		//	_player.jump = false;
+		//		//	_player.state = IDLE;
+		//		//}
+		//		if (_player.fall)
+		//		{
+		//			_player.fall = false;
+		//			_player.state = IDLE;
+		//		}
+		//	}
+		//}
 
 		//바텀. player바텀+5 부분이 파랑색이면,   
-		for (int i = _player.x - 50 / 2; i < _player.x + 50 / 2; ++i)//플레이어 범위 양옆 검사
-		{
-			if (GetPixel(getPixelBlue(), i, _player.y + 50 / 2 + 5) == RGB(0, 0, 255) && _player.gravity <= 0)
-			{
-				_player.y += _player.gravity;
-				_player.jump = false;
-				_player.gravity = 20;
-				break;
-			}
-		}
+		//for (int i = _player.x - 50 / 2; i < _player.x + 50 / 2; ++i)//플레이어 범위 양옆 검사
+		//{
+		//	if (GetPixel(getPixelBlue(), i, _player.y + 50 / 2 + 5) == RGB(0, 0, 255) && _player.gravity <= 0)
+		//	{
+		//		_player.y += _player.gravity;
+		//		_player.jump = false;
+		//		_player.gravity = 20;
+		//		break;
+		//	}
+		//}
+
+		//if (blueCollision())
+		//{
+		//	//_player.x -= _player.speed;
+		//}
 
 		//for (int i = _player.x-25; i < _player.x + 25; ++i)
 		//{
-			//player.x 오른쪽+5 가 파랑색이면, 
-			if (GetPixel(getPixelBlue(), _player.x + 25, _player.y) == RGB(0, 0, 255))
-			{
-			}
-		//}
+					//}
 	}// if life
 } // func
 
+// 왼쪽 담당 충돌체크 
+bool player::blueCollision(void)
+{
+	//player.x 왼쪽+5 가 파랑색이면, 
+	if (GetPixel(getPixelBlue(), _player.x - 25, _player.y) == RGB(0, 0, 255))
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+// 오른쪽 담당 충돌체크 
+bool player::greenCollision(void)
+{
+	if (GetPixel(getPixelGreen(), _player.x + 25, _player.y) == RGB(0, 255, 0))
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+// 위쪽 담당 충돌체크 
+bool player::yellowCollision(void)
+{
+	if (GetPixel(getPixelYellow(), _player.x , _player.y - 25) == RGB(255,255,0))
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
 
 void player::jump(void)
 {
 	if (_player.jump)
 	{
-		_player.gravity -= 2.0f;
+		_player.gravity -= 2.8f;
 		_player.y -= _player.gravity;
 		miniY -= _player.gravity;
 
@@ -727,7 +849,11 @@ void player::frameFunc(void)
 		{
 			_player.frameCount = 0;
 			_player.currentX++;
-			if (_player.currentX > 9)
+			if (_player.currentX == 1)
+			{
+				se11 = true;
+			}
+			if (_player.currentX > 14)
 			{
 				_player.currentX = 0;
 			}
@@ -782,8 +908,6 @@ void player::frameFunc(void)
 	default:
 		break;
 	}
-
-
 }
 
 
@@ -933,7 +1057,6 @@ void player::geddyFrameFunc(void)
 
 void player::geddyCastFunc()
 {
-
 	if (geddy.cast)
 	{
 		geddy.castGravity += 0.5f;
@@ -989,20 +1112,23 @@ void player::CurveLineFunc()
 }
 
 
-
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Sound _______________________________________________________________________________________________________
+// 배경음 _______________________________________________________________________________________________________
 void player::soundInit()
 {
 	// 사운드창 열었냐?
-	//_soundOpen = false; 
 	soundOpen = false;
 
+	// 배경음 ______________________________________________________________________________________________배경음 
 	//사운드창 배경.
-	IMAGEMANAGER->addImage("soundOption","UI/soundOption.bmp",WINSIZEX,WINSIZEY,true,RGB(255,0,255));
+	IMAGEMANAGER->addImage("soundOption","UI/soundOption1.bmp",WINSIZEX,WINSIZEY,true,RGB(255,0,255));
 
 	//버튼 
 	IMAGEMANAGER->addFrameImage("soundBtn", "UI/soundBtn.bmp", 133/1.4, 74 / 1.4, 1, 2, true, RGB(255, 0, 255));
+
+	IMAGEMANAGER->addImage("soundBar", "UI/soundBar.bmp",440,44, true, RGB(255, 0, 255));
+	IMAGEMANAGER->addImage("barHandle", "UI/barHandle.bmp", 8,44, true, RGB(255, 0, 255));
 
 	soundBtn = new button;
 	soundBtn->init("soundBtn", 1210, 680, PointMake(0, 1),
@@ -1017,35 +1143,467 @@ void player::soundInit()
 	SOUNDMANAGER->addSound("5", "sound/dunGeonScene.flac", true, true);
 	SOUNDMANAGER->addSound("6", "sound/Bomboman.flac", true, true);
 	SOUNDMANAGER->addSound("7", "sound/bossScene.flac", true, true);
-
+	SOUNDMANAGER->addSound("8", "sound/08eventBridge.flac", true, true);
+	SOUNDMANAGER->addSound("9", "sound/09_lab.flac", true, true);
+	
 	NowPlayList = "0";
+
+	//testBGM
+
+	// 이거 두개가 데이터베이스용인것같아. 
+	PlayList = 0;
+	playNum = 0;
+	volume = 0.5f;
+	//if (!SOUNDMANAGER->isPlay(NowPlayList)) SOUNDMANAGER->play(NowPlayList, volume);
+
+	px = 5;
+	py = 410;
+	
+	MouseCheck = false;
+	musicStart = false;
+	musicStartFrame = 0;
 }
+
 void player::soundUpdate()
 {
+	// &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+	// 배경음 &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& 배경음
+	if (!SOUNDMANAGER->isPlay(NowPlayList)) SOUNDMANAGER->play(NowPlayList);
+	
+	PlayList = playNum;
+
+	if (playNum == 0)
+	{
+		//SOUNDMANAGER->stop("0");
+		SOUNDMANAGER->stop("1");
+		SOUNDMANAGER->stop("2");
+		SOUNDMANAGER->stop("3");
+		SOUNDMANAGER->stop("4");
+		SOUNDMANAGER->stop("5");
+		SOUNDMANAGER->stop("6");
+		SOUNDMANAGER->stop("7");
+		SOUNDMANAGER->stop("8");
+		SOUNDMANAGER->stop("9");
+	}
+	if (playNum == 1)
+	{
+		SOUNDMANAGER->stop("0");
+		//SOUNDMANAGER->stop("1");
+		SOUNDMANAGER->stop("2");
+		SOUNDMANAGER->stop("3");
+		SOUNDMANAGER->stop("4");
+		SOUNDMANAGER->stop("5");
+		SOUNDMANAGER->stop("6");
+		SOUNDMANAGER->stop("7");
+		SOUNDMANAGER->stop("8");
+		SOUNDMANAGER->stop("9");
+	}
+	if (playNum == 2)
+	{
+		SOUNDMANAGER->stop("0");
+		SOUNDMANAGER->stop("1");
+		//SOUNDMANAGER->stop("2");
+		SOUNDMANAGER->stop("3");
+		SOUNDMANAGER->stop("4");
+		SOUNDMANAGER->stop("5");
+		SOUNDMANAGER->stop("6");
+		SOUNDMANAGER->stop("7");
+		SOUNDMANAGER->stop("8");
+		SOUNDMANAGER->stop("9");
+	}
+	if (playNum == 3)
+	{
+		SOUNDMANAGER->stop("0");
+		SOUNDMANAGER->stop("1");
+		SOUNDMANAGER->stop("2");
+		//SOUNDMANAGER->stop("3");
+		SOUNDMANAGER->stop("4");
+		SOUNDMANAGER->stop("5");
+		SOUNDMANAGER->stop("6");
+		SOUNDMANAGER->stop("7");
+		SOUNDMANAGER->stop("8");
+		SOUNDMANAGER->stop("9");
+	}
+	if (playNum == 4)
+	{
+		SOUNDMANAGER->stop("0");
+		SOUNDMANAGER->stop("1");
+		SOUNDMANAGER->stop("2");
+		SOUNDMANAGER->stop("3");
+		//SOUNDMANAGER->stop("4");
+		SOUNDMANAGER->stop("5");
+		SOUNDMANAGER->stop("6");
+		SOUNDMANAGER->stop("7");
+		SOUNDMANAGER->stop("8");
+		SOUNDMANAGER->stop("9");
+	}
+	if (playNum == 5)
+	{
+		SOUNDMANAGER->stop("0");
+		SOUNDMANAGER->stop("1");
+		SOUNDMANAGER->stop("2");
+		SOUNDMANAGER->stop("3");
+		SOUNDMANAGER->stop("4");
+		//SOUNDMANAGER->stop("5");
+		SOUNDMANAGER->stop("6");
+		SOUNDMANAGER->stop("7");
+		SOUNDMANAGER->stop("8");
+		SOUNDMANAGER->stop("9");
+	}
+	if (playNum == 6)
+	{
+		SOUNDMANAGER->stop("0");
+		SOUNDMANAGER->stop("1");
+		SOUNDMANAGER->stop("2");
+		SOUNDMANAGER->stop("3");
+		SOUNDMANAGER->stop("4");
+		SOUNDMANAGER->stop("5");
+		//SOUNDMANAGER->stop("6");
+		SOUNDMANAGER->stop("7");
+		SOUNDMANAGER->stop("8");
+		SOUNDMANAGER->stop("9");
+	}
+	if (playNum == 7)
+	{
+		SOUNDMANAGER->stop("0");
+		SOUNDMANAGER->stop("1");
+		SOUNDMANAGER->stop("2");
+		SOUNDMANAGER->stop("3");
+		SOUNDMANAGER->stop("4");
+		SOUNDMANAGER->stop("5");
+		SOUNDMANAGER->stop("6");
+		//SOUNDMANAGER->stop("7");
+		SOUNDMANAGER->stop("8");
+		SOUNDMANAGER->stop("9");
+	}
+	if (playNum == 8)
+	{
+		SOUNDMANAGER->stop("0");
+		SOUNDMANAGER->stop("1");
+		SOUNDMANAGER->stop("2");
+		SOUNDMANAGER->stop("3");
+		SOUNDMANAGER->stop("4");
+		SOUNDMANAGER->stop("5");
+		SOUNDMANAGER->stop("6");
+		SOUNDMANAGER->stop("7");
+		//SOUNDMANAGER->stop("8");
+		SOUNDMANAGER->stop("9");
+	}	
+	if (playNum == 9)
+	{
+		SOUNDMANAGER->stop("0");
+		SOUNDMANAGER->stop("1");
+		SOUNDMANAGER->stop("2");
+		SOUNDMANAGER->stop("3");
+		SOUNDMANAGER->stop("4");
+		SOUNDMANAGER->stop("5");
+		SOUNDMANAGER->stop("6");
+		SOUNDMANAGER->stop("7");
+		SOUNDMANAGER->stop("8");
+		//SOUNDMANAGER->stop("9");
+	}
+
+	// 정수값 받아서 스트링값으로 넣어준다. 
+	switch (PlayList)
+	{
+	case 0:
+		NowPlayList = "0";
+		break;
+
+	case 1:
+		NowPlayList = "1";
+		break;
+
+	case 2:
+		NowPlayList = "2";
+		break;
+
+	case 3:
+		NowPlayList = "3";
+		break;
+
+	case 4:
+		NowPlayList = "4";
+		break;
+
+	case 5:
+		NowPlayList = "5";
+		break;
+
+	case 6:
+		NowPlayList = "6";
+		break;
+
+	case 7:
+		NowPlayList = "7";
+		break;
+
+	case 8:
+		NowPlayList = "8";
+		break;
+
+	case 9:
+		NowPlayList = "9";
+		break;
+	}
+
 	if (soundOpen)
 	{
-		if (KEYMANAGER->isOnceKeyDown('T'))
+		py = 300;
+		b[0].rc = RectMake(px, py, 8, 44);
+
+		barRC = RectMake(617, py, px, 44);
+		barRC2 = RectMake(617, py, 440, 44);
+
+		// 프로그래스바의 렉트를 누르면, 그러니까 볼륨 버튼을 누르면 이제 바인식이 되는거지. 
+		if (PtInRect(&barRC2, _ptMouse))
 		{
-			if (!SOUNDMANAGER->isPlay("0"))
+			if (_leftButtonDown)
 			{
-				SOUNDMANAGER->play("0");
+				px = _ptMouse.x - 617;
 			}
 		}
+
+		//바 정해진 길이를 -0.5~0.5이고, 이를 볼륨 셋에 대입한다. 
+		if (KEYMANAGER->isOnceKeyUp(MK_LBUTTON))
+		{
+			MouseCheck = true;
+			volume = (px / 440.0f) - 0.5f;
+			SOUNDMANAGER->setVolume(NowPlayList, volume);
+
+			MouseCheck = false;
+		}
+		/// sound btn&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& 버튼 디비
 		if (KEYMANAGER->isOnceKeyDown(VK_RETURN))
 		{
 			DATABASE->getElementData("player")->soundOpen = false;
 		}
-	}
-	soundOpen = DATABASE->getElementData("player")->soundOpen;
+	     	} //soundOpen
+
+		soundOpen = DATABASE->getElementData("player")->soundOpen;
 }
 
 void player::soundRender()
 {
+	HBRUSH brushSound = CreateSolidBrush(RGB(120,0,180));
+	HBRUSH brushSound1 = CreateSolidBrush(RGB(130,78,218));
+	HBRUSH brushSound2 = CreateSolidBrush(RGB(180,150,218));
+	HPEN penSound  = CreatePen(PS_SOLID, 1, RGB(120, 0, 180));
+	HPEN penSound1 = CreatePen(PS_SOLID, 1, RGB(130, 78, 218));
+
 	if (soundOpen)
 	{
 	   IMAGEMANAGER->findImage("soundOption")->render(getMemDC());
 	}
+
+	if (soundOpen)
+	{
+		// 배경음 바 ____________________________________________________________________________________________배경음
+			//Rectangle(getMemDC(), barRC2.left, barRC2.top, barRC2.right, barRC2.bottom);
+			SelectObject(getMemDC(), brushSound);
+			SelectObject(getMemDC(), penSound); 
+			Rectangle(getMemDC(), barRC.left, barRC.top, barRC.right, barRC.bottom); // 세번째 
+			SelectObject(getMemDC(), brushSound1);
+			Rectangle(getMemDC(), barRC.left, barRC.top+5, barRC.right, barRC.bottom-15); // 두번쨰
+			SelectObject(getMemDC(), brushSound2);
+			SelectObject(getMemDC(), penSound1);
+			Rectangle(getMemDC(), barRC.left, barRC.top + 10, barRC.right, barRC.bottom - 25); // 흐린거
+			//Rectangle(getMemDC(), b[i].rc.left, b[i].rc.top, b[i].rc.right, b[i].rc.bottom);
+			//IMAGEMANAGER->findImage("soundBar")->render(getMemDC(), barRC2.left, barRC2.top);
+			IMAGEMANAGER->findImage("barHandle")->render(getMemDC(), barRC.right, barRC.top);
+	}
+	DeleteObject(brushSound);
+	DeleteObject(brushSound1);
+	DeleteObject(brushSound2);
+	DeleteObject(penSound);
+
+	//char str[128];
+	//SetTextColor(getMemDC(), RGB(0,0,0));
+	//HFONT myFont = CreateFont(25, 0, 0, 0, 1, 0, 0, 0, HANGEUL_CHARSET, 3, 2, 1, VARIABLE_PITCH | FF_ROMAN, TEXT("HY/궁/서B"));
+	//SelectObject(getMemDC(), myFont);
+	//
+	////sprintf(str, "%f", volume);
+	////TextOut(getMemDC(), 500, 200, str, strlen(str));
+	////sprintf(str, "%d", PlayList);
+	////TextOut(getMemDC(), 500, 250, str, strlen(str));
+	//
+	//DeleteObject(myFont);
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//// Sound _______________________________________________________________________________________________________
+//// 효과음_______________________________________________________________________________________________________
+void player::soundInit1()
+{
+	se1 = false;
+	se2 = false;
+	se3 = false;
+	se4 = false;
+	se5 = false;; // 이벤트 브릿지. 
+	se6 = false;; // 대포. 
+
+	se7 = false; // 블록. 
+	se8 = false; // 문열림. 
+	se9 = false; // 적 폭발.
+	se10 = false; // 물 줌. 
+
+	se11 = false; // 보스 총알. 
+	se12 = false; // 해적선 터질때.
+	
+	_soundIndex = 0;
+
+	char strSoundKey[128];
+	char strSoundName[128];
+
+	for (int i = 0; i < 12; i++)
+	{
+		ZeroMemory(strSoundKey, sizeof(strSoundKey));
+		ZeroMemory(strSoundName, sizeof(strSoundName));
+
+		sprintf(strSoundKey, "bgm/sound_%d", i);
+		sprintf(strSoundName, "bgm/sound_%d.mp3", i); // 파일이름이 sound_%d 으로 되어 있음. 
+
+		SOUNDMANAGER->addSound(strSoundKey, strSoundName, false, false); 
+		_vTitle.push_back(strSoundName);
+	}
+}
+
+void player::play(void)
+{
+	char strSoundKey[128];
+	sprintf(strSoundKey, "bgm/sound_%d", _soundIndex);
+	SOUNDMANAGER->play(strSoundKey);
+}
+
+void player::stop(void)
+{
+	char strSoundKey[128];
+	sprintf(strSoundKey, "bgm/sound_%d", _soundIndex);
+	SOUNDMANAGER->stop(strSoundKey);
+	//this->setCurrentButton(this->getCurrentButton(BUTTONKIND_PLAY));
+}
+
+void player::pause(void)
+{
+	char strSoundKey[128];
+	sprintf(strSoundKey, "bgm/sound_%d", _soundIndex);
+	if (!SOUNDMANAGER->isPause(strSoundKey))
+	{
+		SOUNDMANAGER->pause(strSoundKey);
+		//this->setCurrentButton(this->getCurrentButton(BUTTONKIND_PLAY));
+	}
+}
+
+void player::setSoundIndex(int index)
+{
+	if (index > 12) _soundIndex = 0;
+	else _soundIndex = index;
+}
+
+
+void player::soundUpdate1()
+{
+	// 총소리 
+	if (se1)
+	{
+		_soundIndex = 0;
+		play();
+		se1 = false;
+	}
+
+	// 날떄
+	if (se2)
+	{
+		_soundIndex = 1;
+		play();
+		se2 = false;
+	}
+
+	// 먹을떄
+	if (se3)
+	{
+		_soundIndex = 2;
+		play();
+		se3 = false;
+	}
+
+	// 링 통과 
+	if (se4)
+	{
+		_soundIndex = 3;
+		play();
+		se4 = false;
+	}
+
+	// 이벤트 브릿지. 
+	if (se5)
+	{
+		_soundIndex = 4;
+		play();
+		se5 = false;
+	}
+	// 대포. 
+	if (se6)
+	{
+		_soundIndex = 5;
+		play();
+		se6 = false;
+	}
+	// // 블록. 
+	if (se7)
+	{
+		_soundIndex = 6;
+		play();
+		se7 = false;
+	}
+	// 문열림
+	if (se8)
+	{
+		_soundIndex = 7;
+		play();
+		se8 = false;
+	}
+	// 적 폭발
+	if (se9)
+	{
+		_soundIndex = 8;
+		play();
+		se9 = false;
+	}
+	// 물 줌
+	if (se10)
+	{
+		_soundIndex = 9;
+		play();
+		se10 = false;
+	}
+	// 보스 총알
+	if (se11)
+	{
+		_soundIndex = 10;
+		play();
+		se11 = false;
+	}
+	// 보스터짐.
+	if (se12)
+	{
+		_soundIndex = 11;
+		play();
+		se12 = false;
+	}
+
+	//if (KEYMANAGER->isOnceKeyDown('5'))
+	//{
+	//	se1 = true;
+	//}
+	//if (_soundIndex > 15) _soundIndex = 0;
+}
+
+void player::soundRender1()
+{
+	
+}
+
 
 void player::cbSoundBtn()
 {
@@ -1103,7 +1661,7 @@ void player::invenUpdate()
 	inventoryOpen = DATABASE->getElementData("player")->inventoryOpen;
 
 	//사격거리가 200보다 크다면, 
-	if (_player.shootSpeed >3.0f)
+	if (_player.shootSpeed >5.0f)
 	{
 		//인벤토리 미착용부분의 불이 트루된다. 
 		inven[0].item = true;
@@ -1132,7 +1690,7 @@ void player::invenUpdate()
 				{
 					inven[0].wear = false;
 					inven[0].notWear = true;
-					DATABASE->getElementData("player")->shootSpeed = 3.0f;
+					DATABASE->getElementData("player")->shootSpeed = 5.0f;
 					itemTextCount = 0;
 				}
 				if (i == 1)
@@ -1164,7 +1722,7 @@ void player::invenUpdate()
 				{
 					inven[0].notWear = false;
 					inven[0].wear = true;
-					DATABASE->getElementData("player")->shootSpeed = 5.2f;
+					DATABASE->getElementData("player")->shootSpeed = 8.0f;
 
 				}
 				if (i == 1)
@@ -1209,6 +1767,7 @@ void player::invenRender()
 			IMAGEMANAGER->findImage("item3")->render(getMemDC(), inven[2].notWearRC.left, inven[2].notWearRC.top);
 		}
 
+		// 입은 경우 
 		if (inven[0].item && inven[0].wear && !inven[0].notWear)
 		{
 			IMAGEMANAGER->findImage("item1")->render(getMemDC(), inven[0].wearRC.left, inven[0].wearRC.top);
@@ -1244,10 +1803,145 @@ void player::cbInventoryBtn()
 }
 
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////effect _________________________________________________________________________________________________________effect
+//struct tagPlayerEffect
+//{
+//	RECT rc;
+//	float x, y, radius;
+//	int frameCount, currentX;
+//	bool life;
+//	bool fire;
+//};
+//tagPlayerEffect pEffect[EFFECT_MAX];
+//
+//void player::effectInit(void)
+//{
+//	IMAGEMANAGER->addFrameImage("playerBullet2", "player/playerBullet2.bmp", 1800, 200, 9, 1, true, RGB(255, 0, 255));
+//
+//	for (int i = 0; i < EFFECT_MAX; i++)
+//	{
+//		pEffect[i].x = 0;
+//		pEffect[i].y = 0;
+//		pEffect[i].fire = false;
+//		pEffect[i].life = false;
+//		pEffect[i].frameCount = 0;
+//		pEffect[i].currentX = 0;
+//		pEffect[i].rc = { 100,100,10,10 };
+//		pEffect[i].radius = 50;
+//		pEffect[i].lifeFrame = 0;
+//	}
+//
+//	/*otherHit=false;
+//	otherHitCount=0;
+//}*/
+//}
+//
+//void player::effectUpdate(void)
+//{
+//	//frame
+//	for (int i = 0; i < EFFECT_MAX; i++)
+//	{
+//		if (!pEffect[i].fire)continue;
+//		else {
+//			pEffect[i].lifeFrame++;
+//			if (pEffect[i].lifeFrame <= 60)
+//			{
+//				pEffect[i].rc = RectMakeCenter(pEffect[i].x, pEffect[i].y, pEffect[i].radius, pEffect[i].radius);
+//			}
+//			if (pEffect[i].lifeFrame > 60)
+//			{
+//				pEffect[i].lifeFrame = 0;
+//
+//				pEffect[i].life = false;
+//				break;
+//			}
+//		}
+//	}
+//
+//	if (otherHit)
+//	{
+//		//otherHitCount++;
+//			//if (otherHitCount % 2 == 0) // 피가 한번만 닳게끔. 
+//			//{
+//			//	PostQuitMessage(0);
+//				//effectFire();
+//				//otherHitCount = 0;
+//			//}
+//		
+//		otherHit = false;
+//	}
+//}
+//
+//void player::effectRender(void)
+//{
+//	for (int i = 0; i < EFFECT_MAX; i++)
+//	{
+//		if (!pEffect[i].fire)continue;
+//		IMAGEMANAGER->findImage("playerBullet2")->frameRender(getMemDC(), pEffect[i].rc.left, 
+//		pEffect[i].rc.right, pEffect[i].currentX,0);
+//		//Rectangle(getMemDC(),pEffect[i].rc.left, pEffect[i].rc.top, pEffect[i].rc.right, pEffect[i].rc.bottom);
+//		//break;
+//	}
+//}
+//
+//void player::effectFire(void)
+//{
+//	// fire
+//	for (int i = 0; i < EFFECT_MAX; i++)
+//	{
+//		if (pEffect[i].fire)continue;
+//		pEffect[i].fire = true;
+//		pEffect[i].rc = RectMakeCenter(pEffect[i].x, pEffect[i].y, pEffect[i].radius, pEffect[i].radius);
+//		break;
+//	}
+//}
+
 void player::removeMissile(int arrNum)
 {
-	if (_player._fire)
+	//if (_player._fire)
+	//{
+	//	//frame
+	//	if (pEffect[arrNum].fire)
+	//	{
+	//			pEffect[arrNum].rc = RectMakeCenter(_player._fire->getVBullet()[arrNum].x, 
+	//				_player._fire->getVBullet()[arrNum].y, pEffect[arrNum].radius,
+	//				pEffect[arrNum].radius);
+	//			Rectangle(getMemDC(), pEffect[arrNum].rc.left, pEffect[arrNum].rc.top, 
+	//				pEffect[arrNum].rc.right, pEffect[arrNum].rc.bottom);
+	//			pEffect[arrNum].life = false;
+	//		
+	//	}
+	//	
+	//	
+	//}
+	_player._fire->removeMissile(arrNum);
+}
+
+
+void player::gunPixelCollision(void)
+{
+	for (int i = 0; i < _player._fire->getVBullet().size(); i++)
 	{
-		_player._fire->removeMissile(arrNum);
+		//player총알 왼쪽+5 가 파랑색이면, 
+		if (GetPixel(getPixelBlue(), _player._fire->getVBullet()[i].x - 10, _player._fire->getVBullet()[i].y) == RGB(0, 0, 255))
+		{
+			removeMissile(i);
+		}
+		// 플레이어 총알 오른쪽이 초록색이면,
+		if (GetPixel(getPixelGreen(), _player._fire->getVBullet()[i].x + 10, _player._fire->getVBullet()[i].y) == RGB(0, 255,0))
+		{
+			removeMissile(i);
+		}
+		// 플레이어 총알 위쪽이 노랑색이면,
+		if (GetPixel(getPixelYellow(), _player._fire->getVBullet()[i].x, _player._fire->getVBullet()[i].y-10) == RGB(255,255, 0))
+		{
+			removeMissile(i);
+		}
+		// 플레이어 총알 아래쪽이 핑크색이면,
+		if (GetPixel(getPixel(), _player._fire->getVBullet()[i].x, _player._fire->getVBullet()[i].y - 10) == RGB(255, 0,255))
+		{
+			removeMissile(i);
+		}
 	}
 }

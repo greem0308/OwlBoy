@@ -4,6 +4,8 @@
 class playerEffect :public effect
 {
 public:
+
+
 	virtual HRESULT init(float x, float y);
 	virtual void release(void);
 	virtual void update(void);

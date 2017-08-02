@@ -3,10 +3,13 @@
 #include "gamenode.h"
 #include "animation.h"
 #include <vector>
+#include "effectManager.h"
 
 struct tagBullet
 {
 	image* img;
+
+	image* img2;
 	RECT rc;
 	int radius;
 	float speed;
@@ -60,8 +63,8 @@ public:
 	virtual void update(void);
 	virtual void render(void);
 
-	virtual void fire(float x, float y, float angle,
-		float speed);
+	virtual void fire(float x, float y,
+		float speed,float angle);
 	virtual void move(void);
 	virtual void draw(void);
 
@@ -103,11 +106,44 @@ public:
 };
 
 
-
 #define ANICOUNT 3.0f
 
-//쏠때마다 만들고 삭제하는 미사일!
+//쏠때마다 만들고 삭제하는 미사일! // player
 class missileM1 : public gameNode
+{
+private:
+	vector<tagBullet> _vBullet;
+	vector<tagBullet>::iterator _viBullet;
+
+	float _range;
+	int _bulletMax;
+	int onceCount; // 한번만 들어오게. 
+
+public:
+	effectManager* _efm;
+	
+	virtual HRESULT init(int bulletMax, float range);
+	virtual void release(void);
+	virtual void update(void);
+	virtual void render(void);
+
+	//int NumY 는 y축 애니메이션 프레임을 얻어온다. 각도에 따라 달라짐. 
+	virtual void fire(float x, float y, float angle, int Num,int NumY,float speed);
+	virtual void move(void);
+	virtual void draw(void);
+	virtual void xMissile(int arrNum, int num, bool Check);
+	virtual void effectDelete();
+	void removeMissile(int arrNum);
+
+	vector<tagBullet> getVBullet(void) { return _vBullet; }
+
+	missileM1(void);
+	virtual ~missileM1(void);
+};
+
+
+//쏠때마다 만들고 삭제하는 미사일! // boss
+class missileM2 : public gameNode
 {
 private:
 	vector<tagBullet> _vBullet;
@@ -122,7 +158,7 @@ public:
 	virtual void update(void);
 	virtual void render(void);
 
-	virtual void fire(float x, float y, float angle, int Num,float speed);
+	virtual void fire(float x, float y, float angle, int Num, float speed);
 	virtual void move(void);
 	virtual void draw(void);
 	virtual void xMissile(int arrNum, int num, bool Check);
@@ -131,7 +167,7 @@ public:
 
 	vector<tagBullet> getVBullet(void) { return _vBullet; }
 
-	missileM1(void);
-	virtual ~missileM1(void);
+	missileM2(void);
+	virtual ~missileM2(void);
 };
 
